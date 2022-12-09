@@ -50,7 +50,7 @@ Type_t getF(char **buffer, VarList *varList, size_t *err) {
 
     Type_t val = getE(buffer, err);
 
-    StandType_t node = nullptr;
+    Type_t node = nullptr;
     *err |= createDeclarationNode(&node, index, val);
 
     if (CUR_SYM != '\n') ERR_EXE(calcEndOfProgramErr);
