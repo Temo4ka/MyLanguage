@@ -37,7 +37,7 @@ static size_t getInd(VarList *varList, char *name, size_t *err);
 
 static  bool  isBinOp(char c);
 
-StandType_t getF(char **buffer, VarList *varList, size_t *err) {
+Type_t getF(char **buffer, VarList *varList, size_t *err) {
     catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
 
     char *name = getV(buffer, err);
