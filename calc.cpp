@@ -7,16 +7,16 @@
 
 //----------------------------------------
 //!
-//! Условие 
 //! Присваивание:
 //! F = V [=] G
 //! Число:
-//! G = E, '\n'
-//! E = T {[+ -] T}*
-//! T = D {[* /] D}*
+//! G = B, '\n'
+//! B = E {[<, <=, >, >=, ==] E}*
+//! E = T {[+, -] T}*
+//! T = D {[*, /] D}*
 //! D = U {[^] U}*
 //! U = cos(E) | sin(E) | ln(E) | -E | P
-//! P = (E) | N | val(V)
+//! P = (E) | N | V
 //! N = ['0' - '9']+
 //! V = ['a' - 'z' | 'A' - 'Z']+
 //-----------------------------------------
@@ -35,7 +35,9 @@ static Type_t getVarInd(size_t *err);
 
 static size_t getInd(VarList *varList, char *name, size_t *err);
 
-StandTreeNode *getF(char **buffer, VarList *varList, size_t *err) {
+static  bool  isBinOp(char c);
+
+StandType_t getF(char **buffer, VarList *varList, size_t *err) {
     catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
 
     char *name = getV(buffer, err);
@@ -48,7 +50,7 @@ StandTreeNode *getF(char **buffer, VarList *varList, size_t *err) {
 
     Type_t val = getE(buffer, err);
 
-    StandTreeNode *node = nullptr;
+    StandType_t node = nullptr;
     *err |= createDeclarationNode(&node, index, val);
 
     if (CUR_SYM != '\n') ERR_EXE(calcEndOfProgramErr);
@@ -56,20 +58,21 @@ StandTreeNode *getF(char **buffer, VarList *varList, size_t *err) {
     return node;
 }
 
-Type_t getG(char **buffer, size_t *err) {
+Type_t getG(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
+
+    Type_t node = getE(buffer, varList, err);
+
+    fprintf(stderr, "%c\n", CUR_SYM);
+    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(calcEndOfProgramErr);
+    
+    return node;
+}
+
+Type_t getB(char **buffer, size_t *err) {
     catchNullptr(buffer, POISON, *err |= calcNullCaught;);
 
     Type_t val = getE(buffer, err);
-
-    if (CUR_SYM != '\n') ERR_EXE(calcEndOfProgramErr);
-    
-    return val;
-}
-
-Type_t getE(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
-
-    Type_t val = getT(buffer, err);
 
     while (CUR_SYM == '+' || CUR_SYM == '-') {
         char curOp = CUR_SYM;
@@ -84,125 +87,172 @@ Type_t getE(char **buffer, size_t *err) {
     return val;
 }
 
-Type_t getT(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+Type_t getE(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
-    Type_t val = getD(buffer, err);
+    Type_t node1 = getT(buffer, varList, err);
 
-    while (CUR_SYM == '*' || CUR_SYM == '/') {
-        char curOp = CUR_SYM;
+    while (CUR_SYM == '+' || CUR_SYM == '-') {
+        Type_t node  = nullptr;
+
+        if (CUR_SYM == '+')
+            *err |= newOpNode(&node, Operand, Add);
+        else
+            *err |= newOpNode(&node, Operand, Sub);
+
         NEXT_SYM;
 
-        Type_t val2 = getD(buffer, err);
-        if (val2 == POISON) ERR_EXE(calcGetT_Error);
+        Type_t node2 = getT(buffer, varList, err);
 
-        if (curOp == '*')
-            val *= val2;
-        else {
-            if (val2 == 0) ERR_EXE(calcDevisionByZero);
-            val /= val2;
-        }
+        if (node1 == nullptr) ERR_EXE(calcGetE_Error);
+        if (node2 == nullptr) ERR_EXE(calcGetE_Error);
+
+        node -> lft = node1;
+        node -> rgt = node2;   
+
+        node1 = node;         
     }
 
-    return val;
+    return node1;
 }
 
-Type_t getD(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+Type_t getT(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
-    Type_t val = getU(buffer, err);
+    Type_t node1 = getD(buffer, varList, err);
+
+     while (CUR_SYM == '*' || CUR_SYM == '/') {
+        Type_t node  = nullptr;
+
+        if (CUR_SYM == '*')
+            *err |= newOpNode(&node, Operand, Mul);
+        else
+            *err |= newOpNode(&node, Operand, Div);
+
+        NEXT_SYM;
+
+        Type_t node2 = getT(buffer, varList, err);
+
+        if (node1 == nullptr) ERR_EXE(calcGetE_Error);
+        if (node2 == nullptr) ERR_EXE(calcGetE_Error);
+
+        node -> lft = node1;
+        node -> rgt = node2;
+
+        node1 = node;            
+    }
+
+    return node1;
+}
+
+Type_t getD(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
+
+    Type_t node1 = getU(buffer, varList, err);
+    catchNullptr2(buffer, nullptr, *err |= calcGetD_Error;);
 
     while (CUR_SYM == '^') {
         NEXT_SYM;
 
-        Type_t val2 = getU(buffer, err);
-        if (val2 == POISON) ERR_EXE(calcGetD_Error);
+        Type_t node  =     nullptr      ;
+        *err |= newOpNode(&node, Operand, Pow);
 
-        val = pow(val, val2);
+        Type_t node2 = getU(buffer, varList, err);
+        catchNullptr2(buffer, nullptr, *err |= calcGetD_Error;);
+
+        node -> lft = node1;
+        node -> rgt = node2;
+
+        node1 = node;
     }
 
-    return val;
+    return node1;
 }
 
-Type_t getU(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+Type_t getU(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     if (!strncmp("cos(", CUR_STR, 4)) {
-        Type_t val = getCos(buffer, err);
-        if (val == POISON || *err) ERR_EXE(calcGetU_Error);
+        Type_t node = getCos(buffer, varList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
 
-        return val;
+        return node;
     }
 
     if (!strncmp("sin(", CUR_STR, 4)) {
-        Type_t val = getSin(buffer, err);
-        if (val == POISON || *err) ERR_EXE(calcGetU_Error);
+        Type_t node = getSin(buffer, varList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
         
-        return val;
+        return node;
     }
 
     if (!strncmp("ln(", CUR_STR, 3)) {
-        Type_t val = getLog(buffer, err);
-        if (val == POISON || *err) ERR_EXE(calcGetU_Error);
+        // fprintf(stderr, "Here\n");
+        Type_t node = getLog(buffer, varList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
         
-        return val;
+        return node;
     }
 
     if (CUR_SYM == '-') {
-        Type_t val = getNeg(buffer, err);
-        if (val == POISON || *err) ERR_EXE(calcGetU_Error);
+        Type_t node = getNeg(buffer, varList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
 
-        return val;
+        return node;
     }
 
-    Type_t val = getP(buffer, err);
+    Type_t node = getP(buffer, varList, err);
 
-    if (val == POISON || *err) ERR_EXE(calcGetU_Error);
+    if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
 
-    return val;
+    return node;
 }
 
-Type_t getP(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+Type_t getP(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     if (CUR_SYM == '(') {
         NEXT_SYM;
-        Type_t val = getE(buffer, err);
+        Type_t node = getE(buffer, varList, err);
         if (CUR_SYM != ')') ERR_EXE(calcGetP_Error);
         NEXT_SYM;
         
-        return val;
-    }
-    Type_t val = getN(buffer, err);
-    if (val == POISON) {
-        val = getVarVal(err);
-        if (val == POISON || *err) ERR_EXE(*err | calcGetP_Error);
+        return node;
     }
 
-    return val;
+    Type_t node = getN(buffer, err);
+    if (node == nullptr)
+        node = getV(buffer, varList, err);
+    catchNullptr2(node, nullptr, *err |= calcGetP_Error;);
+
+    return node;
 }
 
 Type_t getN(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
-    Type_t val = 0;
+    Elem_t val = 0;
 
-    if (CUR_SYM < '0' && CUR_SYM > '9') return POISON;
+    if (CUR_SYM < '0' || CUR_SYM > '9') return nullptr;
 
     while (CUR_SYM >= '0' && CUR_SYM <= '9') {
         val = val * 10 + CUR_SYM - '0';
         NEXT_SYM;
     }
 
-    return val;
+    Type_t node = nullptr;
+    *err |= newNumNode(&node, Numeral, val);
+
+    return node;
 }
 
-char* getV(char **buffer, size_t *err) {
-    catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
+Type_t getV(char **buffer, Vocabulary *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     char *newVar = (char *) calloc(MAX_VAR_SIZE, sizeof(char));
     char *curVar = newVar;
 
+    // fprintf(stderr, "Here\n");
     if (!isalpha(CUR_SYM)) {
         *err |= calcGetV_Error;
         return nullptr;
@@ -213,8 +263,14 @@ char* getV(char **buffer, size_t *err) {
         NEXT_SYM;
         curVar++;
     }
+    *curVar = '\0';
+
+    varList -> var[varList -> size++] = newVar;
+
+    Type_t node = nullptr;
+    *err |= newVarNode(&node, Varriable, newVar);
     
-    return newVar;
+    return node;
 }
 
 static Type_t getCos(char **buffer, size_t *err) {
@@ -343,4 +399,8 @@ size_t getInd(VarList *varList, char *name, size_t *err) {
     }
 
     return -1;
+}
+
+static bool isBinOp(char *str) {
+
 }
