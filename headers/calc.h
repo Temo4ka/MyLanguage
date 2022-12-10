@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "standTree/front_end.h"
 #include "config.h"
-
 
 struct Buffer {
     const char *fileName = nullptr;
@@ -38,7 +38,7 @@ enum CalcErrors {
 
 struct VarList {
     char   **names  = (char **) calloc(1, sizeof(char*));
-    int    *values  =  (int *)  calloc(1,  sizeof(int) );
+    int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
     size_t   size   =              0                    ;
     size_t capacity =              1                    ;
 };

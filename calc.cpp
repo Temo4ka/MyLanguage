@@ -35,6 +35,8 @@ static Type_t getVarInd(size_t *err);
 
 static size_t getInd(VarList *varList, char *name, size_t *err);
 
+static size_t resize(VarList *list, size_t newSize);
+
 static OperandType isBinOp(char **buffer, size_t *err);
 
 Type_t getF(char **buffer, VarList *varList, size_t *err) {
@@ -284,6 +286,9 @@ Type_t getV(char **buffer, VarList *varList, size_t *err) {
     }
     *curVar = '\0';
 
+    if (varList -> capacity == varList -> size)
+        *err |= resize(varList, varList -> capacity * 2);
+    if (*err) ERR_EXE(*err);
     
     varList -> names[varList -> size++] = newVar;
 
@@ -390,8 +395,6 @@ static Type_t getRev(char **buffer, size_t *err) {
 
     return node;
 }
-
-static size_t resize(VarList *list, size_t newSize);
 
 size_t newVar(VarList *list, char *name, int val) {
     catchNullptr(list, calcNullCaught, NULL;);
