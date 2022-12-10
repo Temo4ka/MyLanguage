@@ -64,7 +64,7 @@ int treeNodeCtor(StandTreeNode *node, enum NodeType type);
 
 int treeIndexNodeCtor(StandTreeNode *node, enum NodeType type, size_t nodeData);
 
-int treeNumNodeCtor(StandTreeNode *node, double nodeData);
+int treeNumNodeCtor(StandTreeNode *node, int nodeData);
 
 int treeOpNodeCtor (StandTreeNode *node, char   nodeData);
 

@@ -11,7 +11,7 @@ int newIndexNode(StandTreeNode **node, enum NodeType type, size_t nodeData) {
     return treeIndexNodeCtor(*node, type, nodeData);
 }
 
-int newNumNode(StandTreeNode **node, double nodeData) {
+int newNumNode(StandTreeNode **node, int nodeData) {
     *node = (StandTreeNode *) calloc(1, sizeof(StandTreeNode));
     return treeNumNodeCtor(*node, nodeData);
 }

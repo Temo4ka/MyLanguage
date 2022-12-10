@@ -12,6 +12,7 @@ enum NodeType {
 };
 
 enum OperandType {
+    None   =  0,
     Add    =  1,
     Sub    =  2,
     Mul    =  3,
@@ -28,7 +29,10 @@ enum OperandType {
     Not    = 14,
     Or     = 15,
     And    = 16,
-    Ass    = 17, 
+    Ass    = 17,
+    Cos    = 18,
+    Sin    = 19,
+    Log    = 20,
 };
 
 typedef int Elem_t;

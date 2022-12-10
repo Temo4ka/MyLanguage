@@ -19,13 +19,15 @@
 //! V = ['a' - 'z' | 'A' - 'Z']+
 //-----------------------------------------
 
-static Type_t getCos(char **buffer, size_t *err);
+static Type_t getCos(char **buffer, VarList *varList, size_t *err);
 
-static Type_t getSin(char **buffer, size_t *err);
+static Type_t getSin(char **buffer, VarList *varList, size_t *err);
 
-static Type_t getLog(char **buffer, size_t *err);
+static Type_t getLog(char **buffer, VarList *varList, size_t *err);
 
-static Type_t getNeg(char **buffer, size_t *err);
+static Type_t getNeg(char **buffer, VarList *varList, size_t *err);
+
+static Type_t getRev(char **buffer, VarList *varList, size_t *err);
 
 static Type_t getVarVal(size_t *err);
 
@@ -46,7 +48,7 @@ Type_t getF(char **buffer, VarList *varList, size_t *err) {
 
     if (CUR_SYM != '=') ERR_EXE(calcGetF_Error);
 
-    Type_t val = getE(buffer, err);
+    Type_t val = getB(buffer, err);
 
     Type_t node = nullptr;
     *err |= createDeclarationNode(&node, index, val);
@@ -59,7 +61,7 @@ Type_t getF(char **buffer, VarList *varList, size_t *err) {
 Type_t getG(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
-    Type_t node = getE(buffer, varList, err);
+    Type_t node = getB(buffer, varList, err);
 
     fprintf(stderr, "%c\n", CUR_SYM);
     if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(*err | calcEndOfProgramErr);
@@ -77,7 +79,7 @@ Type_t getB(char **buffer,  size_t *err) {
     while (op) {
         Type_t  node  = nullptr;
 
-        *err |= newOpNode(&node, Operator, op);
+        *err |= newOpNode(&node, op);
 
         NEXT_SYM;
 
@@ -106,9 +108,9 @@ Type_t getE(char **buffer, VarList *varList, size_t *err) {
         Type_t node  = nullptr;
 
         if (CUR_SYM == '+')
-            *err |= newOpNode(&node, Operator, Add);
+            *err |= newOpNode(&node, Add);
         else
-            *err |= newOpNode(&node, Operator, Sub);
+            *err |= newOpNode(&node, Sub);
 
         NEXT_SYM;
 
@@ -135,9 +137,9 @@ Type_t getT(char **buffer, VarList *varList, size_t *err) {
         Type_t node  = nullptr;
 
         if (CUR_SYM == '*')
-            *err |= newOpNode(&node, Operator, Mul);
+            *err |= newOpNode(&node, Mul);
         else
-            *err |= newOpNode(&node, Operator, Div);
+            *err |= newOpNode(&node, Div);
 
         NEXT_SYM;
 
@@ -165,7 +167,7 @@ Type_t getD(char **buffer, VarList *varList, size_t *err) {
         NEXT_SYM;
 
         Type_t node  =     nullptr      ;
-        *err |= newOpNode(&node, Operator, Pow);
+        *err |= newOpNode(&node, Pow);
 
         Type_t node2 = getU(buffer, varList, err);
         catchNullptr2(buffer, nullptr, *err |= calcGetD_Error;);
@@ -211,6 +213,13 @@ Type_t getU(char **buffer, VarList *varList, size_t *err) {
         return node;
     }
 
+    if (CUR_SYM == '!') {
+        Type_t node = getRev(buffer, varList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
+
+        return node;
+    }
+
     Type_t node = getP(buffer, varList, err);
 
     if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
@@ -223,7 +232,7 @@ Type_t getP(char **buffer, VarList *varList, size_t *err) {
 
     if (CUR_SYM == '(') {
         NEXT_SYM;
-        Type_t node = getE(buffer, varList, err);
+        Type_t node = getB(buffer, varList, err);
         if (CUR_SYM != ')') ERR_EXE(calcGetP_Error);
         NEXT_SYM;
         
@@ -260,7 +269,7 @@ Type_t getV(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     char *newVar = (char *) calloc(MAX_VAR_SIZE, sizeof(char));
-    char *curVar = newVar;
+    char *curVar =                     newVar                 ;
 
     // fprintf(stderr, "Here\n");
     if (!isalpha(CUR_SYM)) {
@@ -275,66 +284,111 @@ Type_t getV(char **buffer, VarList *varList, size_t *err) {
     }
     *curVar = '\0';
 
-    varList -> var[varList -> size++] = newVar;
+    
+    varList -> names[varList -> size++] = newVar;
 
     Type_t node = nullptr;
-    *err |= newVarNode(&node, Varriable, newVar);
+    *err |= newIndexNode(&node, Varriable, varList -> size - 1);
     
     return node;
 }
 
-static Type_t getCos(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+static Type_t getCos(char **buffer, VarList *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     CUR_STR += 4;
 
-    Type_t val = getE(buffer, err);
+    Type_t arg  = getB(buffer, varList, err);
+    Type_t node =      nullptr     ;
 
-    if (val == POISON || CUR_SYM != ')') ERR_EXE(calcGetCosError);
+    *err |= newOpNode(&node, Cos);
+    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetCosError);
 
     NEXT_SYM;
 
-    return cos(val);
+    node -> lft = arg;
+
+    return node;
 }
 
-static Type_t getSin(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+static Type_t getSin(char **buffer, VarList *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     CUR_STR += 4;
 
-    Type_t val = getE(buffer, err);
+    Type_t arg  = getB(buffer, varList, err);
+    Type_t node =      nullptr     ;
 
-    if (val == POISON || CUR_SYM != ')') ERR_EXE(calcGetSinError);
+    *err |= newOpNode(&node, Sin);
+    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetSinError);
 
     NEXT_SYM;
 
-    return sin(val);
+    node -> lft = arg;
+
+    return node;
 }
 
-static Type_t getLog(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+static Type_t getLog(char **buffer, VarList *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
+
+    CUR_STR += 3;
+
+    Type_t arg  = getB(buffer, varList, err);
+    Type_t node =           nullptr         ;
+
+    *err |= newOpNode(&node, Log);
+    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetLogError);
+
+    NEXT_SYM;
+
+    node -> lft = arg;
+
+    return node;
+}
+
+static Type_t getNeg(char **buffer, VarList *varList, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     CUR_STR += 4;
 
-    Type_t val = getE(buffer, err);
+    Type_t arg  = getB(buffer, varList, err);
+    Type_t node =      nullptr     ;
+    Type_t neg  =      nullptr     ;
 
-    if (val == POISON || CUR_SYM != ')') ERR_EXE(calcGetLogError);
+    *err |= newOpNode (&node, Operator, Mul);
+    *err |= newNumNode(&node, Numeral,  -1);
+
+    if (arg == nullptr) ERR_EXE(calcGetLogError);
 
     NEXT_SYM;
 
-    return log(val);
+    node -> lft = neg;
+    node -> rgt = arg;
+
+    return node;
 }
 
-static Type_t getNeg(char **buffer, size_t *err) {
-    catchNullptr(buffer, POISON, *err |= calcNullCaught;);
+static Type_t getRev(char **buffer, size_t *err) {
+    catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
-    CUR_STR++;
+    NEXT_SYM;
 
-    Type_t val = getE(buffer, err);
+    Type_t arg1  = getB(buffer, varList, err);
+    Type_t arg2 =           nullptr         ;
+    Type_t node =           nullptr         ;
 
-    if (val == POISON) ERR_EXE(calcGetNegError);
+    *err |= newOpNode (&node, NotEq);
+    *err |= newNumNode(&node, NULL );
 
-    return -val;
+    if (*err || arg1 == nullptr || arg2 == nullptr || CUR_SYM != ')') ERR_EXE(calcGetRevError);
+
+    NEXT_SYM;
+
+    node -> lft = arg1;
+    node -> rgt = arg2;
+
+    return node;
 }
 
 static size_t resize(VarList *list, size_t newSize);

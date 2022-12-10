@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "config.h"
 
+
 struct Buffer {
     const char *fileName = nullptr;
 
@@ -29,6 +30,7 @@ enum CalcErrors {
     calcGetSinError      = 1 << 10,
     calcGetLogError      = 1 << 11,
     calcGetNegError      = 1 << 12,
+    calcGetRevError      = 1 << 13,
     calcDevisionByZero   = 1 << 13,
     calcEndOfProgramErr  = 1 << 14,
     calcUnexpectedSymbol = 1 << 15,
