@@ -13,22 +13,25 @@ struct Buffer {
 };
 
 enum CalcErrors {
-    calcOk              =       0,
-    calcNullCaught      = 1 <<  0,
-    calcGetT_Error      = 1 <<  1,
-    calcGetD_Error      = 1 <<  2,
-    calcGetP_Error      = 1 <<  3,
-    calcGetU_Error      = 1 <<  4,
-    calcGetN_Error      = 1 <<  5,
-    calcGetV_Error      = 1 <<  6,
-    calcGetF_Error      = 1 <<  7
-    calcBufferError     = 1 <<  8,
-    calcGetCosError     = 1 <<  9,
-    calcGetSinError     = 1 << 10,
-    calcGetLogError     = 1 << 11,
-    calcGetNegError     = 1 << 12,
-    calcDevisionByZero  = 1 << 13,
-    calcEndOfProgramErr = 1 << 14,
+    calcOk               =       0,
+    calcNullCaught       = 1 <<  0,
+    calcGetG_Error       = 1 <<  1,
+    calcGetE_Error       = 1 <<  1,
+    calcGetT_Error       = 1 <<  1,
+    calcGetD_Error       = 1 <<  2,
+    calcGetP_Error       = 1 <<  3,
+    calcGetU_Error       = 1 <<  4,
+    calcGetN_Error       = 1 <<  5,
+    calcGetV_Error       = 1 <<  6,
+    calcGetF_Error       = 1 <<  7,
+    calcBufferError      = 1 <<  8,
+    calcGetCosError      = 1 <<  9,
+    calcGetSinError      = 1 << 10,
+    calcGetLogError      = 1 << 11,
+    calcGetNegError      = 1 << 12,
+    calcDevisionByZero   = 1 << 13,
+    calcEndOfProgramErr  = 1 << 14,
+    calcUnexpectedSymbol = 1 << 15,
 };
 
 struct VarList {

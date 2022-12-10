@@ -7,8 +7,6 @@
 
 //----------------------------------------
 //!
-//! Присваивание:
-//! F = V [=] G
 //! Число:
 //! G = B, '\n'
 //! B = E {[<, <=, >, >=, ==] E}*
@@ -35,7 +33,7 @@ static Type_t getVarInd(size_t *err);
 
 static size_t getInd(VarList *varList, char *name, size_t *err);
 
-static  bool  isBinOp(char c);
+static OperandType isBinOp(char **buffer, size_t *err);
 
 Type_t getF(char **buffer, VarList *varList, size_t *err) {
     catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
@@ -58,36 +56,48 @@ Type_t getF(char **buffer, VarList *varList, size_t *err) {
     return node;
 }
 
-Type_t getG(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getG(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     Type_t node = getE(buffer, varList, err);
 
     fprintf(stderr, "%c\n", CUR_SYM);
-    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(calcEndOfProgramErr);
+    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(*err | calcEndOfProgramErr);
     
     return node;
 }
 
-Type_t getB(char **buffer, size_t *err) {
+Type_t getB(char **buffer,  size_t *err) {
     catchNullptr(buffer, POISON, *err |= calcNullCaught;);
 
-    Type_t val = getE(buffer, err);
+    Type_t      node1 = getE(buffer, err);
 
-    while (CUR_SYM == '+' || CUR_SYM == '-') {
-        char curOp = CUR_SYM;
+    OperandType  op   = isBinOp(buffer, err);
+
+    while (op) {
+        Type_t  node  = nullptr;
+
+        *err |= newOpNode(&node, Operator, op);
+
         NEXT_SYM;
-        Type_t val2 = getT(buffer, err);
-        if (curOp == '+')
-            val += val2;
-        else
-            val -= val2;
+
+        Type_t node2 = getT(buffer, varList, err);
+
+        if (node1 == nullptr) ERR_EXE(calcGetE_Error);
+        if (node2 == nullptr) ERR_EXE(calcGetE_Error);
+
+        node -> lft = node1;
+        node -> rgt = node2;   
+
+        node1 = node;
+
+        op = isBinOp(buffer, err);
     }
 
-    return val;
+    return node1;
 }
 
-Type_t getE(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getE(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     Type_t node1 = getT(buffer, varList, err);
@@ -96,9 +106,9 @@ Type_t getE(char **buffer, Vocabulary *varList, size_t *err) {
         Type_t node  = nullptr;
 
         if (CUR_SYM == '+')
-            *err |= newOpNode(&node, Operand, Add);
+            *err |= newOpNode(&node, Operator, Add);
         else
-            *err |= newOpNode(&node, Operand, Sub);
+            *err |= newOpNode(&node, Operator, Sub);
 
         NEXT_SYM;
 
@@ -116,7 +126,7 @@ Type_t getE(char **buffer, Vocabulary *varList, size_t *err) {
     return node1;
 }
 
-Type_t getT(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getT(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     Type_t node1 = getD(buffer, varList, err);
@@ -125,9 +135,9 @@ Type_t getT(char **buffer, Vocabulary *varList, size_t *err) {
         Type_t node  = nullptr;
 
         if (CUR_SYM == '*')
-            *err |= newOpNode(&node, Operand, Mul);
+            *err |= newOpNode(&node, Operator, Mul);
         else
-            *err |= newOpNode(&node, Operand, Div);
+            *err |= newOpNode(&node, Operator, Div);
 
         NEXT_SYM;
 
@@ -145,7 +155,7 @@ Type_t getT(char **buffer, Vocabulary *varList, size_t *err) {
     return node1;
 }
 
-Type_t getD(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getD(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     Type_t node1 = getU(buffer, varList, err);
@@ -155,7 +165,7 @@ Type_t getD(char **buffer, Vocabulary *varList, size_t *err) {
         NEXT_SYM;
 
         Type_t node  =     nullptr      ;
-        *err |= newOpNode(&node, Operand, Pow);
+        *err |= newOpNode(&node, Operator, Pow);
 
         Type_t node2 = getU(buffer, varList, err);
         catchNullptr2(buffer, nullptr, *err |= calcGetD_Error;);
@@ -169,7 +179,7 @@ Type_t getD(char **buffer, Vocabulary *varList, size_t *err) {
     return node1;
 }
 
-Type_t getU(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getU(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     if (!strncmp("cos(", CUR_STR, 4)) {
@@ -208,7 +218,7 @@ Type_t getU(char **buffer, Vocabulary *varList, size_t *err) {
     return node;
 }
 
-Type_t getP(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getP(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     if (CUR_SYM == '(') {
@@ -246,7 +256,7 @@ Type_t getN(char **buffer, size_t *err) {
     return node;
 }
 
-Type_t getV(char **buffer, Vocabulary *varList, size_t *err) {
+Type_t getV(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
     char *newVar = (char *) calloc(MAX_VAR_SIZE, sizeof(char));
@@ -401,6 +411,48 @@ size_t getInd(VarList *varList, char *name, size_t *err) {
     return -1;
 }
 
-static bool isBinOp(char *str) {
+static OperandType isBinOp(char **buffer, size_t *err) {
+    catchNullptr(buffer, None, *err |= calcNullCaught;);
 
+    if (CUR_SYM == '<') {
+        NEXT_SYM;
+        if (CUR_SYM == '=') {
+            NEXT_SYM;
+            return LsEq;
+        } else
+            return Ls;
+    }
+
+    if (CUR_SYM == '>') {
+    NEXT_SYM;
+        if (CUR_SYM == '=') {
+            NEXT_SYM;
+            return BgEq;
+        } else
+            return Bg;
+    }
+
+    if (CUR_SYM == '=') {
+        NEXT_SYM;
+        if (CUR_SYM == '=') {
+            NEXT_SYM;
+            return Eq;
+        } else {
+            *err |= calcUnexpectedSymbol;
+            return None;
+        }
+    }
+
+    if (CUR_SYM == '!') {
+        NEXT_SYM;
+        if (CUR_SYM == '=') {
+            NEXT_SYM;
+            return NotEq;
+        } else {
+            *err |= calcUnexpectedSymbol;
+            return None;
+        }
+    }
+
+    return None;
 }
