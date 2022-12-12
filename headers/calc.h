@@ -25,6 +25,7 @@ enum CalcErrors {
     calcGetN_Error       = 1 <<  5,
     calcGetV_Error       = 1 <<  6,
     calcGetF_Error       = 1 <<  7,
+    calcGetIf_Error       = 1 <<  1,
     calcBufferError      = 1 <<  8,
     calcGetCosError      = 1 <<  9,
     calcGetSinError      = 1 << 10,
@@ -49,9 +50,13 @@ int bufferDtor(Buffer *buf);
 
 Type_t getG(char **buffer, VarList *varList, size_t *err);
 
+Type_t getWhile(char **buffer, VarList *varList, size_t *err);
+
+Type_t getIf(char **buffer, VarList *varList, size_t *err);
+
 Type_t declare(char **buffer, VarList *varList, size_t *err);
 
-Type_t getB(char **buffer, VarList *varList, size_t *err)
+Type_t getB(char **buffer, VarList *varList, size_t *err);
 
 Type_t getE(char **buffer, VarList *varList, size_t *err);
 
