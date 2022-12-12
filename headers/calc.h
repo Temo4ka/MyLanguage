@@ -47,18 +47,22 @@ int bufferCtor(Buffer *buf, const char *fileName);
 
 int bufferDtor(Buffer *buf);
 
-Type_t getG(char **buffer, size_t *err);
+Type_t getG(char **buffer, VarList *varList, size_t *err);
 
-Type_t getE(char **buffer, size_t *err);
+Type_t declare(char **buffer, VarList *varList, size_t *err);
 
-Type_t getT(char **buffer, size_t *err);
+Type_t getB(char **buffer, VarList *varList, size_t *err)
 
-Type_t getP(char **buffer, size_t *err);
+Type_t getE(char **buffer, VarList *varList, size_t *err);
 
-Type_t getN(char **buffer, size_t *err);
+Type_t getT(char **buffer, VarList *varList, size_t *err);
 
-Type_t getD(char **buffer, size_t *err);
+Type_t getP(char **buffer, VarList *varList, size_t *err);
 
-Type_t getU(char **buffer, size_t *err);
+Type_t getN(char **buffer, VarList *varList, size_t *err);
+
+Type_t getD(char **buffer, VarList *varList, size_t *err);
+
+Type_t getU(char **buffer, VarList *varList, size_t *err);
 
 size_t newVar(VarList *list, char *name, int val = NULL);

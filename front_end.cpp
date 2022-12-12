@@ -16,7 +16,7 @@ int newNumNode(StandTreeNode **node, int nodeData) {
     return treeNumNodeCtor(*node, nodeData);
 }
 
-int newOpNode (StandTreeNode **node, char   nodeData) {
+int newOpNode (StandTreeNode **node, enum OperandType nodeData) {
     *node = (StandTreeNode *) calloc(1, sizeof(StandTreeNode));
     return treeOpNodeCtor(*node, nodeData);
 }
@@ -62,7 +62,7 @@ int treeNumNodeCtor(StandTreeNode *node, Elem_t nodeData) {
     return TreeIsOk;
 }
 
-int treeOpNodeCtor(StandTreeNode *node, char nodeData) {
+int treeOpNodeCtor(StandTreeNode *node, enum OperandType nodeData) {
     catchNullptr(node, TreeIsNull, NULL;);
 
     node ->   lft    =  nullptr;

@@ -5,10 +5,10 @@
 #include <ctype.h>
 #include <string.h>
 
-//----------------------------------------
-//!
-//! Число:
+//-----------------------------------------
 //! G = B, '\n'
+//! Значение:
+//! Declare = B {[=] B}*1
 //! B = E {[<, <=, >, >=, ==] E}*
 //! E = T {[+, -] T}*
 //! T = D {[*, /] D}*
@@ -39,27 +39,6 @@ static size_t resize(VarList *list, size_t newSize);
 
 static OperandType isBinOp(char **buffer, size_t *err);
 
-Type_t getF(char **buffer, VarList *varList, size_t *err) {
-    catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
-
-    char *name = getV(buffer, err);
-    if (*err) ERR_EXE(err);
-
-    size_t index = getInd(varList, name, err);
-    if (index == -1 || *err) return nullptr;
-
-    if (CUR_SYM != '=') ERR_EXE(calcGetF_Error);
-
-    Type_t val = getB(buffer, err);
-
-    Type_t node = nullptr;
-    *err |= createDeclarationNode(&node, index, val);
-
-    if (CUR_SYM != '\n') ERR_EXE(calcEndOfProgramErr);
-    
-    return node;
-}
-
 Type_t getG(char **buffer, VarList *varList, size_t *err) {
     catchNullptr2(buffer, nullptr, *err |= calcNullCaught;);
 
@@ -71,7 +50,32 @@ Type_t getG(char **buffer, VarList *varList, size_t *err) {
     return node;
 }
 
-Type_t getB(char **buffer,  size_t *err) {
+Type_t Declare(char **buffer, VarList *varList, size_t *err) {
+    catchNullptr(buffer, nullptr, *err |= calcNullCaught;);
+
+    Type_t node1 = getB(buffer, varList, err);
+    if (*err) ERR_EXE(*err);
+
+
+    if (CUR_SYM == '=') {
+        NEXT_SYM;
+        Type_t node2 = getB(buffer, varList, err);
+        if (*err) ERR_EXE(*err);
+
+        Type_t  node = nullptr;
+        *err |= newOpNode(&node, Declaration);
+        if (*err) ERR_EXE(*err);
+
+        node -> lft = node1;
+        node -> rgt = node2;
+
+        return node;
+    }
+    
+    return node1;
+}
+
+Type_t getB(char **buffer, VarList *varList,  size_t *err) {
     catchNullptr(buffer, POISON, *err |= calcNullCaught;);
 
     Type_t      node1 = getE(buffer, err);
@@ -289,7 +293,7 @@ Type_t getV(char **buffer, VarList *varList, size_t *err) {
     if (varList -> capacity == varList -> size)
         *err |= resize(varList, varList -> capacity * 2);
     if (*err) ERR_EXE(*err);
-    
+
     varList -> names[varList -> size++] = newVar;
 
     Type_t node = nullptr;
