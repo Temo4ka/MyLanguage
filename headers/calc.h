@@ -25,19 +25,20 @@ enum CalcErrors {
     calcGetN_Error       = 1 <<  5,
     calcGetV_Error       = 1 <<  6,
     calcGetF_Error       = 1 <<  7,
-    calcGetIf_Error       = 1 <<  1,
-    calcBufferError      = 1 <<  8,
+    calcGetIf_Error      = 1 <<  1,
     calcGetCosError      = 1 <<  9,
     calcGetSinError      = 1 << 10,
     calcGetLogError      = 1 << 11,
     calcGetNegError      = 1 << 12,
     calcGetRevError      = 1 << 13,
+    calcBufferError      = 1 <<  8,
+    calcGetWhile_Error   = 1 << 12,
     calcDevisionByZero   = 1 << 13,
     calcEndOfProgramErr  = 1 << 14,
     calcUnexpectedSymbol = 1 << 15,
 };
 
-struct VarList {
+struct NameList {
     char   **names  = (char **) calloc(1, sizeof(char*));
     int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
     size_t   size   =              0                    ;
@@ -48,26 +49,26 @@ int bufferCtor(Buffer *buf, const char *fileName);
 
 int bufferDtor(Buffer *buf);
 
-Type_t getG(char **buffer, VarList *varList, size_t *err);
+Type_t getG(char **buffer, NameList *varList, size_t *err);
 
-Type_t getWhile(char **buffer, VarList *varList, size_t *err);
+Type_t getWhile(char **buffer, NameList *varList, size_t *err);
 
-Type_t getIf(char **buffer, VarList *varList, size_t *err);
+Type_t getIf(char **buffer, NameList *varList, size_t *err);
 
-Type_t declare(char **buffer, VarList *varList, size_t *err);
+Type_t declare(char **buffer, NameList *varList, size_t *err);
 
-Type_t getB(char **buffer, VarList *varList, size_t *err);
+Type_t getB(char **buffer, NameList *varList, size_t *err);
 
-Type_t getE(char **buffer, VarList *varList, size_t *err);
+Type_t getE(char **buffer, NameList *varList, size_t *err);
 
-Type_t getT(char **buffer, VarList *varList, size_t *err);
+Type_t getT(char **buffer, NameList *varList, size_t *err);
 
-Type_t getP(char **buffer, VarList *varList, size_t *err);
+Type_t getP(char **buffer, NameList *varList, size_t *err);
 
-Type_t getN(char **buffer, VarList *varList, size_t *err);
+Type_t getN(char **buffer, NameList *varList, size_t *err);
 
-Type_t getD(char **buffer, VarList *varList, size_t *err);
+Type_t getV(char **buffer, NameList *varList, size_t *err);
 
-Type_t getU(char **buffer, VarList *varList, size_t *err);
+Type_t getD(char **buffer, NameList *varList, size_t *err);
 
-size_t newVar(VarList *list, char *name, int val = NULL);
+Type_t getU(char **buffer, NameList *varList, size_t *err);

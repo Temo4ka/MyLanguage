@@ -3,7 +3,7 @@ enum NodeType {
       Numeral   =  1,
      Varriable  =  2,
          If     =  3,
-        Else    =  4,
+      If_else   =  4,
      Condition  =  5, 
        While    =  6,
       Operator  =  7,
