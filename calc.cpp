@@ -7,9 +7,9 @@
 
 //-----------------------------------------
 //! G = B, '\n'
-//! While = {["while)"] B ['('] While}* | If
-//! If = {["if)"] B ['('] While {["else"] While}*}* | Declare 
-//! Declare = B {[=] B}*1
+//! While = { ["while)"] B ['('] While }* | If
+//! If = { ["if)"] B ['('] While {["else"] While}* }* | Declare 
+//! Declare = V {[=] B}*1
 //! B = E {['<', "<=", '>', ">=", "=="] E}*
 //! E = T {['+', '-'] T}*
 //! T = D {['*', '/'] D}*
@@ -20,9 +20,11 @@
 //! V = ['a' - 'z' | 'A' - 'Z']+
 //-----------------------------------------
 
-static Type_t getWhileBody(char **buffer, NameList *varList, size_t *err);
+static Type_t getWhileBody(Type_t whileNode, char **buffer, NameList *varList, size_t *err);
 
 static Type_t   getIfBody (char **buffer, NameList *varList, size_t *err);
+
+static Type_t getCommands (char **buffer, NameList *varList, size_t *err);
 
 static Type_t getCos(char **buffer, NameList *varList, size_t *err);
 
@@ -71,7 +73,7 @@ Type_t getWhile(char **buffer, NameList *varList, size_t *err) {
         if (CUR_SYM != '(') ERR_EXE(calcGetWhile_Error);
         NEXT_SYM;
 
-        Type_t body = getWhileBody(buffer, varList, err);
+        Type_t body = getWhileBody(node, buffer, varList, err);
         if (*err) ERR_EXE(calcGetWhile_Error);
 
         node -> lft = condition;
@@ -487,7 +489,7 @@ static Type_t getRev(char **buffer, NameList *varList, size_t *err) {
     return node;
 }
 
-static Type_t getWhileBody(char **buffer, NameList *varList, size_t *err) {
+static Type_t getWhileBody(Type_t whileNode, char **buffer, NameList *varList, size_t *err) {
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
 
@@ -495,7 +497,21 @@ static Type_t getWhileBody(char **buffer, NameList *varList, size_t *err) {
     *err |= newNode(&node, Fictional);
     if (*err) ERR_EXE(calcGetWhile_Error);
 
+    if (CUR_SYM == '}') {
+        NEXT_SYM;
+        Type_t curNode = node;
+
+        curNode = getCommands(curNode, buffer, varList, err);
+        if (*err) ERR_EXE(calcGetWhile_Error);
+
+        NEXT_SYM;
+        curNode -> rgt = whileNode;
+        return node -> rgt;
+    } 
+
     node -> lft = getWhile(buffer, varList, err);
+    node -> rgt = whileNode;
+    
     if (*err) ERR_EXE(calcGetWhile_Error);
 
     return node;
@@ -505,25 +521,59 @@ static Type_t getIfBody(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
 
-    Type_t node = nullptr;
-    *err |= newNode(&node, Fictional);
-    if (*err) ERR_EXE(calcGetIf_Error);
-
     Type_t ifElse = nullpt;
     *err |= newNode(&node, If_else);
     if (*err) ERR_EXE(calcGetIf_Error);
 
-    ifElse -> lft = getWhile(buffer, varList, err);
+    Type_t node = nullptr;
+    *err |= newNode(&node, Fictional);
     if (*err) ERR_EXE(calcGetIf_Error);
+    
+    if (CUR_SYM == '}') {
+        NEXT_SYM;
+        Type_t curNode = node;
+        curNode = getCommands(curNode, buffer, varList, err);
+        NEXT_SYM;
+        node = node -> rgt;
+    } else
+        node = getWhile(buffer, varList, err);
+    if (*err) ERR_EXE(calcGetIf_Error);
+
+    ifElse -> lft = node;
 
     if (!strncmp(CUR_STR, "else", 4)) {
         CUR_STR += 4;
-        ifElse -> rgt = getWhile(buffer, varList, err);
+
+        if (CUR_SYM == '}') {
+            NEXT_SYM;
+            Type_t curNode = ifElse;
+            curNode = getCommands(curNode, buffer, varList, err);
+            NEXT_SYM;
+        } else
+            ifElse -> rgt = getWhile(buffer, varList, err);
         if (*err) ERR_EXE(calcGetIf_Error);
     }
-    node -> lft = ifElse;
 
-    return node;
+    return ifElse;
+}
+
+static Type_t getCommands(Type_t curNode, char *buffer, NameList *varList, size_t *err) {
+    catchNullptr(buffer , POISON, *err |= calcNullCaught;);
+    catchNullptr(varList, POISON, *err |= calcNullCaught;);
+
+    while (CUR_SYM != '{') {
+        Type_t node1 = nullptr;
+        *err |= newNode(&node1, Fictional);
+        if (*err) ERR_EXE(calcGetWhile_Error);
+
+        node1 -> lft = getWhile(buffer, varList, err);
+        if (*err) ERR_EXE(calcGetWhile_Error);
+
+        curNode -> rgt = node1;
+        curNode = node1;
+    }
+    NEXT_SYM;
+    return curNode;
 }
 
 static size_t nameListInsert(NameList *list, char *name, size_t *err) {
@@ -540,7 +590,7 @@ static size_t nameListInsert(NameList *list, char *name, size_t *err) {
     return list -> size - 1;
 }
 
-int *getVal(NameList *varList, char *name, size_t *err) {
+int *getVal(NameList *list, char *name, size_t *err) {
     catchNullptr(list, nullptr, *err |= calcNullCaught;);
     catchNullptr(name, nullptr, *err |= calcNullCaught;);
     
