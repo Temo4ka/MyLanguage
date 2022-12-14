@@ -32,6 +32,7 @@ enum CalcErrors {
     calcGetNegError      = 1 << 12,
     calcGetRevError      = 1 << 13,
     calcBufferError      = 1 <<  8,
+    calcDeclare_Error    = 1 << 11,
     calcGetWhile_Error   = 1 << 12,
     calcDevisionByZero   = 1 << 13,
     calcEndOfProgramErr  = 1 << 14,

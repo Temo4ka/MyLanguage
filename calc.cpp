@@ -125,18 +125,18 @@ Type_t Declare(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
-    Type_t node1 = getB(buffer, varList, err);
-    if (*err) ERR_EXE(*err);
+    Type_t node1 = getV(buffer, varList, err);
+    if (*err) ERR_EXE(calcDeclare_Error);
 
 
     if (CUR_SYM == '=') {
         NEXT_SYM;
         Type_t node2 = getB(buffer, varList, err);
-        if (*err) ERR_EXE(*err);
+        if (*err) ERR_EXE(calcDeclare_Error);
 
         Type_t  node = nullptr;
         *err |= newOpNode(&node, Declaration);
-        if (*err) ERR_EXE(*err);
+        if (*err) ERR_EXE(calcDeclare_Error);
 
         node -> lft = node1;
         node -> rgt = node2;
