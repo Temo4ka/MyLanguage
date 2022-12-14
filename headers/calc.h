@@ -46,9 +46,9 @@ struct NameList {
     size_t capacity =              1                    ;
 };
 
-int bufferCtor(Buffer *buf, const char *fileName);
+// int bufferCtor(Buffer *buf, const char *fileName);
 
-int bufferDtor(Buffer *buf);
+// int bufferDtor(Buffer *buf);
 
 Type_t getG(char **buffer, NameList *varList, size_t *err);
 
@@ -66,7 +66,7 @@ Type_t getT(char **buffer, NameList *varList, size_t *err);
 
 Type_t getP(char **buffer, NameList *varList, size_t *err);
 
-Type_t getN(char **buffer, NameList *varList, size_t *err);
+Type_t getN(char **buffer, size_t *err);
 
 Type_t getV(char **buffer, NameList *varList, size_t *err);
 

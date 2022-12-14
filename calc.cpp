@@ -8,8 +8,8 @@
 //-----------------------------------------
 //! G = B, '\n'
 //! While = { ["while)"] B ['('] While }* | If
-//! If = { ["if)"] B ['('] While {["else"] While}* }* | Declare 
-//! Declare = V {[=] B}*1
+//! If = { ["if)"] B ['('] While {["else"] While}* }* | Assignation 
+//! Assignation = V {[=] B}*1
 //! B = E {['<', "<=", '>', ">=", "=="] E}*
 //! E = T {['+', '-'] T}*
 //! T = D {['*', '/'] D}*
@@ -116,14 +116,14 @@ Type_t getIf(char **buffer, NameList *varList, size_t *err) {
         return node;
     }
 
-    Type_t node = Declare(buffer, varList, err);
+    Type_t node = Assignation(buffer, varList, err);
     if (*err) ERR_EXE(*err);
 
     return node;
 }
 
 
-Type_t Declare(char **buffer, NameList *varList, size_t *err) {
+Type_t Assignation(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
