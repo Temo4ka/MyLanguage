@@ -14,29 +14,31 @@ struct Buffer {
 };
 
 enum CalcErrors {
-    calcOk               =       0,
-    calcNullCaught       = 1 <<  0,
-    calcGetG_Error       = 1 <<  1,
-    calcGetE_Error       = 1 <<  1,
-    calcGetT_Error       = 1 <<  1,
-    calcGetD_Error       = 1 <<  2,
-    calcGetP_Error       = 1 <<  3,
-    calcGetU_Error       = 1 <<  4,
-    calcGetN_Error       = 1 <<  5,
-    calcGetV_Error       = 1 <<  6,
-    calcGetF_Error       = 1 <<  7,
-    calcGetIf_Error      = 1 <<  1,
-    calcGetCosError      = 1 <<  9,
-    calcGetSinError      = 1 << 10,
-    calcGetLogError      = 1 << 11,
-    calcGetNegError      = 1 << 12,
-    calcGetRevError      = 1 << 13,
-    calcBufferError      = 1 <<  8,
-    calcDeclare_Error    = 1 << 11,
-    calcGetWhile_Error   = 1 << 12,
-    calcDevisionByZero   = 1 << 13,
-    calcEndOfProgramErr  = 1 << 14,
-    calcUnexpectedSymbol = 1 << 15,
+    calcOk                    =       0,
+    calcNullCaught            = 1 <<  0,
+    calcGetG_Error            = 1 <<  1,
+    calcGetE_Error            = 1 <<  2,
+    calcGetT_Error            = 1 <<  3,
+    calcGetD_Error            = 1 <<  4,
+    calcGetP_Error            = 1 <<  5,
+    calcGetU_Error            = 1 <<  6,
+    calcGetN_Error            = 1 <<  7,
+    calcGetV_Error            = 1 <<  8,
+    calcGetF_Error            = 1 <<  9,
+    calcGetIf_Error           = 1 << 19,
+    calcGetCosError           = 1 << 11,
+    calcGetSinError           = 1 << 12,
+    calcGetLogError           = 1 << 13,
+    calcGetNegError           = 1 << 14,
+    calcGetRevError           = 1 << 15,
+    calcBufferError           = 1 << 16,
+    calcDeclare_Error         = 1 << 17,
+    calcGetWhile_Error        = 1 << 18,
+    calcDevisionByZero        = 1 << 19,
+    calcGetString_Error       = 1 << 20,
+    calcUnexpectedSymbol      = 1 << 21,
+    calcEndOfProgramError     = 1 << 22,
+    calcUndefinedVarriable    = 1 << 23,
 };
 
 struct NameList {
@@ -56,7 +58,7 @@ Type_t getWhile(char **buffer, NameList *varList, size_t *err);
 
 Type_t getIf(char **buffer, NameList *varList, size_t *err);
 
-Type_t declare(char **buffer, NameList *varList, size_t *err);
+Type_t assignation(char **buffer, NameList *varList, size_t *err);
 
 Type_t getB(char **buffer, NameList *varList, size_t *err);
 
@@ -73,3 +75,5 @@ Type_t getV(char **buffer, NameList *varList, size_t *err);
 Type_t getD(char **buffer, NameList *varList, size_t *err);
 
 Type_t getU(char **buffer, NameList *varList, size_t *err);
+
+char *getString(char **buffer, size_t *err);

@@ -116,14 +116,14 @@ Type_t getIf(char **buffer, NameList *varList, size_t *err) {
         return node;
     }
 
-    Type_t node = Assignation(buffer, varList, err);
+    Type_t node = assignation(buffer, varList, err);
     if (*err) ERR_EXE(*err);
 
     return node;
 }
 
 
-Type_t Assignation(char **buffer, NameList *varList, size_t *err) {
+Type_t assignation(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
@@ -356,14 +356,31 @@ Type_t getV(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
+    char *newVar = getString(buffer, err);
+    if (*err) ERR_EXE(calcGetV_Error);
+
+    size_t varIndex = getInd(varList, newVar, err);
+    if (*err) ERR_EXE(calcGetV_Error);
+
+    if (varIndex < 0 || varIndex > varList -> size) ERR_EXE(calcUndefinedVarriable);
+    // {
+    //     varIndex = nameListInsert(varList, newVar, err);
+    //     if (*err) ERR_EXE(calcGetV_Error);
+    // }
+    Type_t node = nullptr;
+    *err |= newIndexNode(&node, Varriable, varIndex);
+    
+    return node;
+}
+
+char *getString(char **buffer, size_t *err) {
+    catchNullptr(buffer , POISON, *err |= calcNullCaught;);
+    
     char *newVar = (char *) calloc(MAX_VAR_SIZE, sizeof(char));
     char *curVar =                     newVar                 ;
 
     // fprintf(stderr, "Here\n");
-    if (!isalpha(CUR_SYM)) {
-        *err |= calcGetV_Error;
-        return nullptr;
-    }
+    if (!isalpha(CUR_SYM)) ERR_EXE(calcGetString_Error);
 
     while (isalpha(CUR_SYM)) {
         *curVar = CUR_SYM;
@@ -372,18 +389,7 @@ Type_t getV(char **buffer, NameList *varList, size_t *err) {
     }
     *curVar = '\0';
 
-    size_t varIndex = getInd(varList, newVarm, err);
-    if (*err) ERR_EXE(calcGetV_Error);
-
-    if (varIndex < 0 || varIndex > varList -> size) {
-        varIndex = nameListInsert(varList, newVar, err);
-        if (*err) ERR_EXE(calcGetV_Error);
-    }
-
-    Type_t node = nullptr;
-    *err |= newIndexNode(&node, Varriable, varIndex);
-    
-    return node;
+    return newVar;
 }
 
 static Type_t getCos(char **buffer, NameList *varList, size_t *err) {
@@ -590,17 +596,17 @@ static size_t nameListInsert(NameList *list, char *name, size_t *err) {
     return list -> size - 1;
 }
 
-int *getVal(NameList *list, char *name, size_t *err) {
-    catchNullptr(list, nullptr, *err |= calcNullCaught;);
-    catchNullptr(name, nullptr, *err |= calcNullCaught;);
+// int *getVal(NameList *list, char *name, size_t *err) {
+//     catchNullptr(list, nullptr, *err |= calcNullCaught;);
+//     catchNullptr(name, nullptr, *err |= calcNullCaught;);
     
-    for (size_t cur = 0; cur < list -> size; cur++) {
-        if (!stricmp(name, list -> names[cur]));
-            return list -> names + cur;
-    }
+//     for (size_t cur = 0; cur < list -> size; cur++) {
+//         if (!stricmp(name, list -> names[cur]));
+//             return list -> names + cur;
+//     }
 
-    return nullptr;
-}
+//     return nullptr;
+// }
 
 static size_t resize(NameList *list, size_t newSize) {
     catchNullptr(list, calcNullCaught, NULL;);
@@ -621,19 +627,19 @@ static size_t resize(NameList *list, size_t newSize) {
     return calcOk;
 }
 
-static Type_t getVarVal(size_t *err) {
-    catchNullptr(name, POISON, *err |= calcNullCaught;);
+// static Type_t getVarVal(size_t *err) {
+//     catchNullptr(name, POISON, *err |= calcNullCaught;);
 
-    char *name = getV(buffer, err);
-    if (*err) ERR_EXE(*err);
+//     char *name = getV(buffer, err);
+//     if (*err) ERR_EXE(*err);
 
-    int *value = getVal(varList, name, err);
+//     int *value = getVal(varList, name, err);
 
-    if (value == nullptr) *err |= calcGetP_Error;
-    if (*err) ERR_EXE(*err);
+//     if (value == nullptr) *err |= calcGetP_Error;
+//     if (*err) ERR_EXE(*err);
 
-    return *value;
-}
+//     return *value;
+// }
 
 static size_t getInd(NameList *varList, char *name, size_t *err) {
     catchNullptr(list, nullptr, *err |= calcNullCaught;);
