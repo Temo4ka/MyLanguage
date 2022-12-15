@@ -122,29 +122,66 @@ Type_t getIf(char **buffer, NameList *varList, size_t *err) {
     return node;
 }
 
-
-Type_t assignation(char **buffer, NameList *varList, size_t *err) {
+Type_t getDeclaration(char **buffer, NameList *varList, size_t *err) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
-    Type_t node1 = getV(buffer, varList, err);
-    if (*err) ERR_EXE(calcDeclare_Error);
+    Type_t node = nullptr;
+    *err |= newNode(&node, Fictional);
+    if (*err) ERR_EXE(calcGetDeclaration_Error);
 
+    if (strncmp(CUR_STR, "var", 3)) {
+        CUR_STR += 3;
+        Type_t curNode = node;
+        while (CUR_SYM != ';') {
+            if (CUR_SYM == ',')
+                NEXT_SYM;
+            char *name = getString(buffer, err);
+            if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+            size_t index = nameListInsert(varList, name, err);
+            if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+            Type_t varNode = nullptr;
+            *err |= newIndexNode(&varNode, Varriable, index);
+            if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+            curNode -> lft = varNode;
+
+            Type_t nextNode = nullptr;
+            *err |= newNode(&nextNode, Fictional);
+            if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+            curNode -> rgt = nextNode;
+            curNode = nextNode;
+        }
+        NEXT_SYM;
+    }
+}
+
+Type_t assignation(char **buffer, NameList *varList, size_t *err, char *newVar) {
+    catchNullptr(varList, POISON, *err |= calcNullCaught;);
+    catchNullptr(buffer , POISON, *err |= calcNullCaught;);
+
+    Type_t node1 = getV(buffer, varList, err, newVar);
+    if (*err) ERR_EXE(calcAssignation_Error);
 
     if (CUR_SYM == '=') {
         NEXT_SYM;
         Type_t node2 = getB(buffer, varList, err);
-        if (*err) ERR_EXE(calcDeclare_Error);
+        if (*err) ERR_EXE(calcAssignation_Error);
 
         Type_t  node = nullptr;
         *err |= newOpNode(&node, Declaration);
-        if (*err) ERR_EXE(calcDeclare_Error);
+        if (*err) ERR_EXE(calcAssignation_Error);
 
         node -> lft = node1;
         node -> rgt = node2;
 
         return node;
-    }
+    } else ERR_EXE(calcAssignation_Error);
+
+    if (CUR_SYM != ';') ERR_EXE(calcAssignation_Error);
     
     return node1;
 }
@@ -352,12 +389,14 @@ Type_t getN(char **buffer, size_t *err) {
     return node;
 }
 
-Type_t getV(char **buffer, NameList *varList, size_t *err) {
+Type_t getV(char **buffer, NameList *varList, size_t *err, char *newVar) {
     catchNullptr(varList, POISON, *err |= calcNullCaught;);
     catchNullptr(buffer , POISON, *err |= calcNullCaught;);
 
-    char *newVar = getString(buffer, err);
-    if (*err) ERR_EXE(calcGetV_Error);
+    if (newVar == nullptr) {
+        newVar = getString(buffer, err);
+        if (*err) ERR_EXE(calcGetV_Error);
+    }
 
     size_t varIndex = getInd(varList, newVar, err);
     if (*err) ERR_EXE(calcGetV_Error);

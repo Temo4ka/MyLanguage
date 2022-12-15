@@ -32,13 +32,14 @@ enum CalcErrors {
     calcGetNegError           = 1 << 14,
     calcGetRevError           = 1 << 15,
     calcBufferError           = 1 << 16,
-    calcDeclare_Error         = 1 << 17,
-    calcGetWhile_Error        = 1 << 18,
-    calcDevisionByZero        = 1 << 19,
-    calcGetString_Error       = 1 << 20,
-    calcUnexpectedSymbol      = 1 << 21,
+    calcGetWhile_Error        = 1 << 17,
+    calcDevisionByZero        = 1 << 18,
+    calcGetString_Error       = 1 << 19,
+    calcUnexpectedSymbol      = 1 << 20,
+    calcAssignation_Error     = 1 << 21,
     calcEndOfProgramError     = 1 << 22,
     calcUndefinedVarriable    = 1 << 23,
+    calcGetDeclaration_Error  = 1 << 24,
 };
 
 struct NameList {
@@ -58,7 +59,9 @@ Type_t getWhile(char **buffer, NameList *varList, size_t *err);
 
 Type_t getIf(char **buffer, NameList *varList, size_t *err);
 
-Type_t assignation(char **buffer, NameList *varList, size_t *err);
+Type_t getDeclaration(char **buffer, NameList *varList, size_t *err);
+
+Type_t assignation(char **buffer, NameList *varList, size_t *err, char *newVar = nullptr);
 
 Type_t getB(char **buffer, NameList *varList, size_t *err);
 
@@ -70,7 +73,7 @@ Type_t getP(char **buffer, NameList *varList, size_t *err);
 
 Type_t getN(char **buffer, size_t *err);
 
-Type_t getV(char **buffer, NameList *varList, size_t *err);
+Type_t getV(char **buffer, NameList *varList, size_t *err, char *newVar = nullptr);
 
 Type_t getD(char **buffer, NameList *varList, size_t *err);
 
