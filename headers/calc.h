@@ -40,6 +40,7 @@ enum CalcErrors {
     calcEndOfProgramError     = 1 << 22,
     calcUndefinedVarriable    = 1 << 23,
     calcGetDeclaration_Error  = 1 << 24,
+    calcUnknownCommand_Error  = 1 << 25,
 };
 
 struct NameList {
