@@ -32,6 +32,7 @@ enum CalcErrors {
     calcGetNegError           = 1 << 14,
     calcGetRevError           = 1 << 15,
     calcBufferError           = 1 << 16,
+    calcGetCall_Error         = 1 << 17,
     calcGetWhile_Error        = 1 << 17,
     calcDevisionByZero        = 1 << 18,
     calcGetString_Error       = 1 << 19,
@@ -63,7 +64,7 @@ Type_t getIf(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t assignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar = nullptr);
+Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar = nullptr);
 
 Type_t getB(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
@@ -81,4 +82,10 @@ Type_t getD(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 Type_t getU(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
+Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *err);
+
 char *getString(char **buffer, size_t *err);
+
+char *cur_str(char **buffer);
+
+char cur_sym(char **buffer);

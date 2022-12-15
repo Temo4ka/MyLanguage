@@ -5,11 +5,13 @@
 #include <ctype.h>
 #include <string.h>
 
-//-----------------------------------------
-//! G = B, '\n'
-//! While = { ["while)"] B ['('] While }* | If
-//! If = { ["if)"] B ['('] While {["else"] While}* }* | Assignation 
-//! Assignation = V {[=] B}*1
+//--------------------------------------------------------------------------
+//! G = getDefinition | getDeclaration, '\0'
+//! getDefinition = [def ...)...( }] getDeclaration [{]
+//! getDeclaration = [var ...], ';' | while
+//! While = { ["while )"] B ['('] getDeclaration }* | If
+//! If = { ["if )"] B ['('] getDeclaration {["else"] getDeclaration}* }* | getAssignation
+//! getAssignation = V [=] B, ';'
 //! B = E {['<', "<=", '>', ">=", "=="] E}*
 //! E = T {['+', '-'] T}*
 //! T = D {['*', '/'] D}*
@@ -55,8 +57,8 @@ Type_t getG(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
 
     Type_t node = getB(buffer, varList, funcList, err);
 
-    fprintf(stderr, "%c\n", CUR_SYM);
-    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(*err | calcEndOfProgramErr);
+    // fprintf(stderr, "%c\n", CUR_SYM);
+    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(*err | calcEndOfProgramError);
     
     return node;
 }
@@ -88,12 +90,8 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
         *err |= newNode(&body, Fictional);
         if (*err) ERR_EXE(calcGetDefenition_Error);
 
-        Type_t curNode  = body;
-        Type_t nextNode = body;
-
+        Type_t curNode = body;
         while (CUR_SYM != '{') {
-
-
             curNode -> lft = getWhile(buffer, varList, funcList);
             if (*err) ERR_EXE(calcGetDefenition_Error);
 
@@ -101,7 +99,7 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
             *err |= newNode(*nextNode, Fictional);
             if (*err) ERR_EXE(calcGetDefenition_Error);
 
-            curNode = 
+            curNode -> rgt = nextNode;
         }
         if (curNode == body) ERR_EXE(calcGetDefenition_Error);
         free(curNode);
@@ -223,7 +221,7 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
     ERR_EXE(calcUnknownCommand_Error);
 }
 
-Type_t assignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar) {
+Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar) {
     catchNullptr(varList , POISON, *err |= calcNullCaught;);
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
@@ -249,6 +247,48 @@ Type_t assignation(char **buffer, NameList *varList, NameList *funcList, size_t 
     if (CUR_SYM != ';') ERR_EXE(calcAssignation_Error);
     
     return node1;
+}
+
+Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *err) {
+    catchNullptr(varList , POISON, *err |= calcNullCaught;);
+    catchNullptr(funcList, POISON, *err |= calcNullCaught;);
+    catchNullptr( buffer , POISON, *err |= calcNullCaught;);
+
+    if (CUR_SYM != ')') ERR_EXE(calcGetCall_Error);
+    NEXT_SYM;
+
+    Type_t node = nullptr;
+    *err |= newNode(&node, Fictional);
+    if (*err) ERR_EXE(calcGetCall_Error);
+
+    while (CUR_SYM != '(') {
+        Type_t curNode = node;
+
+        while (CUR_SYM != ')') {
+            if (CUR_SYM == ',')
+                NEXT_SYM;
+
+            Type_t varNode = getV(buffer, varList, funcList, err);
+            if (*err) ERR_EXE(calcGetCall_Error);
+
+            curNode -> lft = varNode;
+
+            Type_t nextNode = nullptr;
+            *err |= newNode(&nextNode, Fictional);
+            if (*err) ERR_EXE(calcGetCall_Error);
+
+            curNode -> rgt = nextNode;
+            curNode = nextNode;
+        }
+        NEXT_SYM;
+
+        if (curNode == node) ERR_EXE(calcGetCall_Error);
+        free(curNode);
+
+        return node;
+    }
+
+    ERR_EXE(calcGetCall_Error);
 }
 
 Type_t getB(char **buffer, NameList *varList, NameList *funcList,  size_t *err) {
@@ -469,6 +509,11 @@ Type_t getV(char **buffer, NameList *varList, NameList *funcList, size_t *err, c
     if (newVar == nullptr) {
         newVar = getString(buffer, err);
         if (*err) ERR_EXE(calcGetV_Error);
+    }
+
+    if (CUR_SYM == ')') {
+        Type_t function = getCall(buffer, varList, funcList, err);
+        return function;
     }
 
     size_t varIndex = getInd(varList, newVar, err);

@@ -40,6 +40,18 @@ int bufferDtor(Buffer *buf) {
     return calcOk;
 }
 
+char cur_sym(char **buffer) {
+    while (**buffer == ' ' || **buffer == '\n')
+        NEXT_SYM;
+    return **buffer;
+}
+
+char *cur_str(char **buffer) {
+    while (**buffer == ' ' || **buffer == '\n')
+        NEXT_SYM;
+    return *buffer;
+}
+
 static size_t getFileSize(const char *fileName) {
     catchNullptr(fileName, EXIT_FAILURE);
 
@@ -51,3 +63,4 @@ static size_t getFileSize(const char *fileName) {
 
     return buf.st_size;
 }
+

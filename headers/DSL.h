@@ -1,5 +1,5 @@
-#define CUR_STR  (*buffer)
-#define CUR_SYM (**buffer)
+#define CUR_STR cur_str(buffer)
+#define CUR_SYM cur_sym(buffer)
 #define NEXT_SYM ++(*buffer)
 
 #define catchNullptr(POINTER, RETURN_VALUE,...) {                                                                  \
