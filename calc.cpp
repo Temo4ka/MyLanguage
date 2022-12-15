@@ -80,9 +80,8 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
         if (*err) ERR_EXE(calcGetDefenition_Error);
 
         node -> lft = getFunctionParams(buffer, varList, funcList, err);
-
-        if (curNode == node) ERR_EXE(calcGetDefenition_Error);
-        free(curNode);
+        node -> rgt = getWhile(buffer, varList, funcList);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
 
         return node;
     }
@@ -715,7 +714,7 @@ static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *func
         if (CUR_SYM != '(' && CUR_SYM != ',') ERR_EXE(calcGetDefenition_Error);
     }
     NEXT_SYM;
-    
+
     if (curNode == node) ERR_EXE(calcGetDefenition_Error);
     free(curNode);
 
