@@ -172,7 +172,7 @@ Type_t assignation(char **buffer, NameList *varList, size_t *err, char *newVar) 
         if (*err) ERR_EXE(calcAssignation_Error);
 
         Type_t  node = nullptr;
-        *err |= newOpNode(&node, Declaration);
+        *err |= newOpNode(&node, Ass);
         if (*err) ERR_EXE(calcAssignation_Error);
 
         node -> lft = node1;
