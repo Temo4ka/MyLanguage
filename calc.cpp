@@ -26,6 +26,8 @@ static Type_t   getIfBody (char **buffer, NameList *varList, NameList *funcList,
 
 static Type_t getCommands (Type_t curNode, char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
+static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+
 static Type_t getCos(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 static Type_t getSin(char **buffer, NameList *varList, NameList *funcList, size_t *err);
@@ -36,7 +38,7 @@ static Type_t getNeg(char **buffer, NameList *varList, NameList *funcList, size_
 
 static Type_t getRev(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-static Type_t getVarVal(size_t *err);
+// static Type_t getVarVal(size_t *err);
 
 static size_t nameListInsert(NameList *varList, char *name, size_t *err);
 
@@ -59,11 +61,33 @@ Type_t getG(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
     return node;
 }
 
-Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_t ) {
+Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
     catchNullptr(varList , POISON, *err |= calcNullCaught;);
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
+    if (strncmp(CUR_STR, "def", 3)) {
+        CUR_STR += 3;
+    
+        char *name = getString(buffer, err);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+        
+        size_t index = nameListInsert(funcList, name, err);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+        
+        Type_t node = nullptr;
+        *err |= newIndexNode(&node, Definition, index);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+
+        node -> lft = getFunctionParams(buffer, varList, funcList, err);
+
+        if (curNode == node) ERR_EXE(calcGetDefenition_Error);
+        free(curNode);
+
+        return node;
+    }
+
+    ERR_EXE(calcUnknownCommand_Error);
 }
 
 Type_t getWhile(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
@@ -654,6 +678,48 @@ static Type_t getCommands(Type_t curNode, char **buffer, NameList *varList, Name
     }
     NEXT_SYM;
     return curNode;
+}
+
+static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
+    catchNullptr( buffer , POISON, *err |= calcNullCaught;);
+    catchNullptr(varList , POISON, *err |= calcNullCaught;);
+    catchNullptr(funcList, POISON, *err |= calcNullCaught;);
+
+    Type_t node = nullptr;
+    *err |= newNode(&node, Fictional);
+    if (*err) ERR_EXE(calcGetDefenition_Error);
+
+    if (CUR_SYM != ')') ERR_EXE(calcGetDefenition_Error);
+
+    Type_t curNode = node;
+    while (CUR_SYM != '(') {
+        NEXT_SYM;
+        char *name = getString(buffer, err);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+
+        size_t index = nameListInsert(varList, name, err);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+
+        Type_t declarationNode = nullptr;
+        *err |= newIndexNode(&declarationNode, Varriable, index);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+        
+        curNode -> lft = declarationNode;
+
+        Type_t nextNode = nullptr;
+        *err |= newNode(&node, Fictional);
+        if (*err) ERR_EXE(calcGetDefenition_Error);
+
+        curNode -> rgt = nextNode;
+        curNode = nextNode;
+        if (CUR_SYM != '(' && CUR_SYM != ',') ERR_EXE(calcGetDefenition_Error);
+    }
+    NEXT_SYM;
+    
+    if (curNode == node) ERR_EXE(calcGetDefenition_Error);
+    free(curNode);
+
+    return node;
 }
 
 static size_t nameListInsert(NameList *list, char *name, size_t *err) {
