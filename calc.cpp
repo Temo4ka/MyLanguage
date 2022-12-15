@@ -299,13 +299,23 @@ Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
+    Type_t node = nullptr;
     if (!strncmp(CUR_STR, "return", 6)) {
         CUR_STR += 6;
 
-        Type_t node = nullptr;
         *err |= newNode(&node, Return);
         if (*err) ERR_EXE(calcGetReturn_Error);
+
+        Type_t body = getB(buffer, varList, funcList, err);
+        if (*err) ERR_EXE(calcGetReturn_Error);
+
+        node -> lft = body;
+    } else {
+        node = getAssignation(buffer, varList, funcList, err);
+        if (*err) ERR_EXE(calcGetReturn_Error);
     }
+
+    return node;
 }
 
 Type_t getB(char **buffer, NameList *varList, NameList *funcList,  size_t *err) {
