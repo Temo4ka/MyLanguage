@@ -80,8 +80,31 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
         if (*err) ERR_EXE(calcGetDefenition_Error);
 
         node -> lft = getFunctionParams(buffer, varList, funcList, err);
-        node -> rgt = getWhile(buffer, varList, funcList);
+
+        if (CUR_SYM != '}') ERR_EXE(calcGetDefenition_Error);
+        NEXT_SYM;
+
+        Type_t body = nullptr;
+        *err |= newNode(&body, Fictional);
         if (*err) ERR_EXE(calcGetDefenition_Error);
+
+        Type_t curNode  = body;
+        Type_t nextNode = body;
+
+        while (CUR_SYM != '{') {
+
+
+            curNode -> lft = getWhile(buffer, varList, funcList);
+            if (*err) ERR_EXE(calcGetDefenition_Error);
+
+            Type_t nextNode = nullptr;
+            *err |= newNode(*nextNode, Fictional);
+            if (*err) ERR_EXE(calcGetDefenition_Error);
+
+            curNode = 
+        }
+        if (curNode == body) ERR_EXE(calcGetDefenition_Error);
+        free(curNode);
 
         return node;
     }
