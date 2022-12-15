@@ -35,6 +35,7 @@ enum CalcErrors {
     calcGetCall_Error         = 1 << 17,
     calcGetWhile_Error        = 1 << 17,
     calcDevisionByZero        = 1 << 18,
+    calcGetReturn_Error       = 1 << 18,
     calcGetString_Error       = 1 << 19,
     calcUnexpectedSymbol      = 1 << 20,
     calcAssignation_Error     = 1 << 21,
@@ -83,6 +84,8 @@ Type_t getD(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 Type_t getU(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *err);
+
+Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *err);
 
 char *getString(char **buffer, size_t *err);
 

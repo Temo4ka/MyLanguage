@@ -10,7 +10,8 @@
 //! getDefinition = [def ...)...( }] getDeclaration [{]
 //! getDeclaration = [var ...], ';' | while
 //! While = { ["while )"] B ['('] getDeclaration }* | If
-//! If = { ["if )"] B ['('] getDeclaration {["else"] getDeclaration}* }* | getAssignation
+//! If = { ["if )"] B ['('] getDeclaration {["else"] getDeclaration}* }* | getReturn
+//! getReturn = [return] B | getAssignation
 //! getAssignation = V [=] B, ';'
 //! B = E {['<', "<=", '>', ">=", "=="] E}*
 //! E = T {['+', '-'] T}*
@@ -18,8 +19,10 @@
 //! D = U {['^'] U}*
 //! U = cos(E) | sin(E) | ln(E) | -E | P
 //! P = (E) | N | V
+//! getCall = S [(] V* [)]
+//! V = {S | getCall}+
 //! N = ['0' - '9']+
-//! V = ['a' - 'z' | 'A' - 'Z']+
+//! S = {['a' - 'z' | 'A' - 'Z']}+
 //-----------------------------------------
 
 static Type_t getWhileBody(Type_t whileNode, char **buffer, NameList *varList, NameList *funcList, size_t *err);
@@ -289,6 +292,20 @@ Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *er
     }
 
     ERR_EXE(calcGetCall_Error);
+}
+
+Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *err) {
+    catchNullptr(varList , POISON, *err |= calcNullCaught;);
+    catchNullptr(funcList, POISON, *err |= calcNullCaught;);
+    catchNullptr( buffer , POISON, *err |= calcNullCaught;);
+
+    if (!strncmp(CUR_STR, "return", 6)) {
+        CUR_STR += 6;
+
+        Type_t node = nullptr;
+        *err |= newNode(&node, Return);
+        if (*err) ERR_EXE(calcGetReturn_Error);
+    }
 }
 
 Type_t getB(char **buffer, NameList *varList, NameList *funcList,  size_t *err) {
