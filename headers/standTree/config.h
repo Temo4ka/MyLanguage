@@ -1,3 +1,7 @@
+#pragma once
+
+#include <string.h>
+
 enum NodeType {
      Fictional  =  0,
       Numeral   =  1,

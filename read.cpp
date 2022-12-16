@@ -40,16 +40,21 @@ int bufferDtor(Buffer *buf) {
     return calcOk;
 }
 
-char cur_sym(char **buffer) {
+char cur_sym (char **buffer) {
     while (**buffer == ' ' || **buffer == '\n')
         NEXT_SYM;
     return **buffer;
 }
 
-char *cur_str(char **buffer) {
+char *cur_str (char **buffer) {
     while (**buffer == ' ' || **buffer == '\n')
         NEXT_SYM;
     return *buffer;
+}
+
+void skip_sym (size_t num, char **buffer) {
+    for (size_t cur = 0; cur < num; cur++)
+        NEXT_SYM;
 }
 
 static size_t getFileSize(const char *fileName) {

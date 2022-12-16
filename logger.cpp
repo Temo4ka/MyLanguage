@@ -2,7 +2,7 @@
 
 static void printNodeParams(StandTreeNode *node, size_t nodeNum, FILE *stream);
 
-const char* treeGraphVizDump(StandTree *tree, const char *fileName) {
+const char* treeGraphVizDump(StandTree *tree, const char *fileName, size_t cmd) {
     if (fileName == nullptr) return nullptr;
     if (  tree   == nullptr) return nullptr;
 
@@ -20,7 +20,7 @@ const char* treeGraphVizDump(StandTree *tree, const char *fileName) {
                     "   }\n",
             tree -> tree, tree -> status);
 
-    fprintf(stream, "   subgraph Nodes {\n"
+    fprintf(stream, "   subgraph Nodes {\n");
 
     size_t cnt = 1;
     treePrintNodeGrVz(tree -> tree, &cnt, stream);
@@ -66,67 +66,67 @@ static void printNodeParams(StandTreeNode *node, size_t nodeNum, FILE* stream) {
 
     switch(node -> type) {
         case Fictional: 
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = aqua,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = aqua,"
                     " label = \"{ Node: %zu | Type : Fictional |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case Numeral:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = firebrick3,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = firebrick3,"
                     " label = \"{ Node: %zu | Type : Numeral | Num: %d |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> num, node -> lft, node -> rgt);
+                    nodeNum, nodeNum, node -> data.num, node -> lft, node -> rgt);
             break;
 
         case Operator:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = gold3,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = gold3,"
                     " label = \"{ Node: %zu | Type : Operator | OpCode: %d |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> op, node -> lft, node -> rgt);
+                    nodeNum, nodeNum, node -> data.op, node -> lft, node -> rgt);
             break;
         
         case Varriable:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = green3,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = green3,"
                     " label = \"{ Node: %zu | Type : Varriable | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> index, node -> lft, node -> rgt);
+                    nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case If:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = oranged,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = oranged,"
                     " label = \"{ Node: %zu | Type : If |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case If_else:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = oranged2,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = oranged2,"
                     " label = \"{ Node: %zu | Type : if-else |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
         
         case While:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = yellow2,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = yellow2,"
                     " label = \"{ Node: %zu | Type : While |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case Declaration:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = violetred,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = violetred,"
                     " label = \"{ Node: %zu | Type : Declaration | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> index, node -> lft, node -> rgt);
+                    nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case Definition:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = violetred1,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = violetred1,"
                     " label = \"{ Node: %zu | Type : Definition | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> index, node -> lft, node -> rgt);
+                    nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case Call:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = seagreen3,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = seagreen3,"
                     " label = \"{ Node: %zu | Type : Call |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
         
         case Return:
-            fprintf("node%zu[shape = Mrecord, style = filled, fillcolor = lightgreen,"
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = lightgreen,"
                     " label = \"{ Node: %zu | Type : Return |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;

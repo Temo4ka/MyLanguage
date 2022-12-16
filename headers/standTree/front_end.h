@@ -1,3 +1,5 @@
+#pragma once
+
 #include "config.h"
 
 enum TreeErrors {
@@ -56,7 +58,7 @@ int newNode(StandTreeNode **node, enum NodeType type);
 
 int newIndexNode(StandTreeNode **node, enum NodeType type, size_t nodeData);
 
-int newNumNode(StandTreeNode **node, double nodeData);
+int newNumNode(StandTreeNode **node, int nodeData);
 
 int newOpNode (StandTreeNode **node, enum OperandType nodeData);
 
@@ -68,4 +70,4 @@ int treeNumNodeCtor(StandTreeNode *node, int nodeData);
 
 int treeOpNodeCtor (StandTreeNode *node, enum OperandType nodeData);
 
-int _treeCtor(Tree *root, const char * name, const char *file, const char *function, size_t line);
+int _treeCtor(StandTree *root, const char * name, const char *file, const char *function, size_t line);

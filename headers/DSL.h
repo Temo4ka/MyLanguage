@@ -1,6 +1,11 @@
+#pragma once
+
+#include <stdio.h>
+
 #define CUR_STR cur_str(buffer)
 #define CUR_SYM cur_sym(buffer)
 #define NEXT_SYM ++(*buffer)
+#define SKIP_SYM(N) skip_sym(N, buffer)
 
 #define catchNullptr(POINTER, RETURN_VALUE,...) {                                                                  \
     if ((POINTER) == nullptr) {                                                                                     \

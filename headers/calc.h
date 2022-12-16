@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "standTree/front_end.h"
@@ -48,9 +50,9 @@ enum CalcErrors {
 
 struct NameList {
     char   **names  = (char **) calloc(1, sizeof(char*));
-    int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
     size_t   size   =              0                    ;
     size_t capacity =              1                    ;
+    // int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
 };
 
 // int bufferCtor(Buffer *buf, const char *fileName);
@@ -63,36 +65,40 @@ Type_t getWhile(char **buffer, NameList *varList, NameList *funcList, size_t *er
 
 Type_t getIf(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
+Type_t getDefinition (char **buffer, NameList *varList, NameList *funcList, size_t *err);
+
 Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar = nullptr);
 
-Type_t getB(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getB (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getE(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getE (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getT(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getT (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getP(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getP (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getN(char **buffer, size_t *err);
+Type_t getN (char **buffer, size_t *err);
 
-Type_t getV(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar = nullptr);
+Type_t getV (char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar = nullptr);
 
-Type_t getD(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getD (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getU(char **buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getU (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getCall (char ** buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getReturn (char ** buffer, NameList *varList, NameList *funcList, size_t *err);
 
-char *getString(char **buffer, size_t *err);
+char *getString (char **buffer, size_t *err);
 
-int assignBuffer(Buffer *buf, const char *fileName);
+int assignBuffer (Buffer *buf, const char *fileName);
 
-int bufferDtor(Buffer *buf);
+int bufferDtor (Buffer *buf);
 
-char *cur_str(char **buffer);
+char *cur_str (char **buffer);
 
-char cur_sym(char **buffer);
+char cur_sym (char **buffer);
+
+void skip_sym (size_t num, char **buffer);

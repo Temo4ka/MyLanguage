@@ -31,11 +31,10 @@ int main(int argc, char *argv[]) {
     NameList varList  = {};
     NameList funcList = {};
 
-    program.tree = getG(&(code -> buffer), &varList, &funcList, &err);
+    program.tree = getG(&(code.buffer), &varList, &funcList, &err);
     CHECK(err);
 
-    int cur = 1;
-    treeGraphVizDump(&program, &cur, "logs/treeDump.dot");
+    treeGraphVizDump(&program, "logs/treeDump.dot");
     
     return EXIT_SUCCESS;
 }
