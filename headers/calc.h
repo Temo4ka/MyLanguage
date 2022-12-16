@@ -27,7 +27,7 @@ enum CalcErrors {
     calcGetN_Error            = 1 <<  7,
     calcGetV_Error            = 1 <<  8,
     calcGetF_Error            = 1 <<  9,
-    calcGetIf_Error           = 1 << 19,
+    calcGetIf_Error           = 1 << 10,
     calcGetCosError           = 1 << 11,
     calcGetSinError           = 1 << 12,
     calcGetLogError           = 1 << 13,
@@ -35,17 +35,17 @@ enum CalcErrors {
     calcGetRevError           = 1 << 15,
     calcBufferError           = 1 << 16,
     calcGetCall_Error         = 1 << 17,
-    calcGetWhile_Error        = 1 << 17,
-    calcDevisionByZero        = 1 << 18,
-    calcGetReturn_Error       = 1 << 18,
-    calcGetString_Error       = 1 << 19,
-    calcUnexpectedSymbol      = 1 << 20,
-    calcAssignation_Error     = 1 << 21,
-    calcEndOfProgramError     = 1 << 22,
-    calcUndefinedVarriable    = 1 << 23,
-    calcGetDefenition_Error   = 1 << 24,
-    calcGetDeclaration_Error  = 1 << 24,
-    calcUnknownCommand_Error  = 1 << 25,
+    calcGetWhile_Error        = 1 << 18,
+    calcDevisionByZero        = 1 << 19,
+    calcGetReturn_Error       = 1 << 20,
+    calcGetString_Error       = 1 << 21,
+    calcUnexpectedSymbol      = 1 << 22,
+    calcAssignation_Error     = 1 << 23,
+    calcEndOfProgramError     = 1 << 24,
+    calcUndefinedVarriable    = 1 << 25,
+    calcGetDefenition_Error   = 1 << 26,
+    calcGetDeclaration_Error  = 1 << 27,
+    calcUnknownCommand_Error  = 1 << 28,
 };
 
 struct NameList {
@@ -87,7 +87,7 @@ Type_t getD (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 Type_t getU (char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-Type_t getCall (char ** buffer, NameList *varList, NameList *funcList, size_t *err);
+Type_t getCall (char ** buffer, NameList *varList, NameList *funcList, size_t index, size_t *err);
 
 Type_t getReturn (char ** buffer, NameList *varList, NameList *funcList, size_t *err);
 

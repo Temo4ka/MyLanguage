@@ -15,18 +15,18 @@
     }                                                                                                                   \
 }
                                                                                                 
-#define ERR_EXE(ERROR_CODE) {                                                     \
-    *err |= ERROR_CODE;                                                            \
-    fprintf(stderr, "%s at %s(%d);\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);    \
-    return POISON;                                                                   \
-}
-
-#define CHECK(ERROR) {                                                                  \
-    if (ERROR) {                                                                         \
-        fprintf(stderr, "ERROR_CODE: %08d\n,"                                             \
-                        "%s at %s(%d);\n",                                                 \
-                ERROR, __PRETTY_FUNCTION__, __FILE__, __LINE__                              \
-                );                                                                           \
-        return EXIT_FAILURE;                                                                  \
-    }                                                                                          \
+#define ERR_EXE(ERROR_CODE) {                                                              \
+    *err |= ERROR_CODE;                                                                     \
+    fprintf(stderr, "ERROR at %s at %s(%d);\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);    \
+    return POISON;                                                                            \
+}                                                                                              
+                                                                                                
+#define CHECK(ERROR) {                                                                           \
+    if (ERROR) {                                                                                  \
+        fprintf(stderr, "ERROR_CODE: %08d       "                                                  \
+                        "%s at %s(%d);\n",                                                          \
+                ERROR, __PRETTY_FUNCTION__, __FILE__, __LINE__                                       \
+                );                                                                                    \
+        return EXIT_FAILURE;                                                                           \
+    }                                                                                                   \
 }

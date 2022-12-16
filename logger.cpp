@@ -67,67 +67,67 @@ static void printNodeParams(StandTreeNode *node, size_t nodeNum, FILE* stream) {
     switch(node -> type) {
         case Fictional: 
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = aqua,"
-                    " label = \"{ Node: %zu | Type : Fictional |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Fictional |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case Numeral:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = firebrick3,"
-                    " label = \"{ Node: %zu | Type : Numeral | Num: %d |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Numeral | Num: %d |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> data.num, node -> lft, node -> rgt);
             break;
 
         case Operator:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = gold3,"
-                    " label = \"{ Node: %zu | Type : Operator | OpCode: %d |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Operator | OpCode: %d |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> data.op, node -> lft, node -> rgt);
             break;
         
         case Varriable:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = green3,"
-                    " label = \"{ Node: %zu | Type : Varriable | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Varriable | Index: %zu |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case If:
-            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = oranged,"
-                    " label = \"{ Node: %zu | Type : If |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = orangered,"
+                    " label = \"{ Node: %zu | Type : If |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case If_else:
-            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = oranged2,"
-                    " label = \"{ Node: %zu | Type : if-else |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+            fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = orangered2,"
+                    " label = \"{ Node: %zu | Type : if-else |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
         
         case While:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = yellow2,"
-                    " label = \"{ Node: %zu | Type : While |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : While |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
 
         case Declaration:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = violetred,"
-                    " label = \"{ Node: %zu | Type : Declaration | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Declaration | Index: %zu |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case Definition:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = violetred1,"
-                    " label = \"{ Node: %zu | Type : Definition | Index: |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Definition | Index: %zu |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case Call:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = seagreen3,"
-                    " label = \"{ Node: %zu | Type : Call |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
-                    nodeNum, nodeNum, node -> lft, node -> rgt);
+                    " label = \"{ Node: %zu | Type : Call | Index: %zu |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
+                    nodeNum, nodeNum, node -> data.index, node -> lft, node -> rgt);
             break;
         
         case Return:
             fprintf(stream, "node%zu[shape = Mrecord, style = filled, fillcolor = lightgreen,"
-                    " label = \"{ Node: %zu | Type : Return |{ LeftSon: %08X | RigthSon: %08X} } ];\n",
+                    " label = \"{ Node: %zu | Type : Return |{ LeftSon: %08X | RigthSon: %08X} }\" ];\n",
                     nodeNum, nodeNum, node -> lft, node -> rgt);
             break;
     }

@@ -72,12 +72,13 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
-    if (strncmp(CUR_STR, "def", 3)) {
+    if (!strncmp(CUR_STR, "def", 3)) {
         SKIP_SYM(3);
     
         char *name = getString(buffer, err);
         if (*err) ERR_EXE(calcGetDefenition_Error);
-        
+        // fprintf(stderr, "%s", name);
+
         size_t index = nameListInsert(funcList, name, err);
         if (*err) ERR_EXE(calcGetDefenition_Error);
         
@@ -96,7 +97,7 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
 
         Type_t curNode = body;
         while (CUR_SYM != '{') {
-            curNode -> lft = getWhile(buffer, varList, funcList, err);
+            curNode -> lft = getDeclaration(buffer, varList, funcList, err);
             if (*err) ERR_EXE(calcGetDefenition_Error);
 
             Type_t nextNode = nullptr;
@@ -104,13 +105,17 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
             if (*err) ERR_EXE(calcGetDefenition_Error);
 
             curNode -> rgt = nextNode;
+            curNode = nextNode;
         }
+        NEXT_SYM;
+
         if (curNode == body) ERR_EXE(calcGetDefenition_Error);
         free(curNode);
 
         return node;
     }
 
+        // fprintf(stderr, "Here!!!\n");
     Type_t node = getDeclaration(buffer, varList, funcList, err);
     if (*err) ERR_EXE(calcGetDefenition_Error);
 
@@ -195,7 +200,7 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
 
     Type_t node = nullptr;
 
-    if (strncmp(CUR_STR, "var", 3)) {
+    if (!strncmp(CUR_STR, "var", 3)) {
         SKIP_SYM(3);
 
         *err |= newNode(&node, Fictional);
@@ -220,6 +225,17 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
             Type_t nextNode = nullptr;
             *err |= newNode(&nextNode, Fictional);
             if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+            if (CUR_SYM == '=') {
+                nextNode -> lft = getAssignation(buffer, varList, funcList, err, name);
+                if (*err) ERR_EXE(calcGetDeclaration_Error);
+
+                curNode -> rgt = nextNode;
+                curNode = nextNode;
+
+                *err |= newNode(&nextNode, Fictional);
+                if (*err) ERR_EXE(calcGetDeclaration_Error);
+            }
 
             curNode -> rgt = nextNode;
             curNode = nextNode;
@@ -257,15 +273,14 @@ Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size
         node -> lft = node1;
         node -> rgt = node2;
 
+        // fprintf(stderr, "%c", CUR_SYM);
         return node;
-    } else ERR_EXE(calcUnknownCommand_Error);
+    } 
 
-    if (CUR_SYM != ';') ERR_EXE(calcAssignation_Error);
-    
-    return node1;
+    ERR_EXE(calcUnknownCommand_Error);
 }
 
-Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *err) {
+Type_t getCall(char **buffer, NameList *varList, NameList *funcList, size_t index, size_t *err) {
     catchNullptr(varList , POISON, *err |= calcNullCaught;);
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
@@ -274,37 +289,34 @@ Type_t getCall(char ** buffer, NameList *varList, NameList *funcList, size_t *er
     NEXT_SYM;
 
     Type_t node = nullptr;
-    *err |= newNode(&node, Fictional);
+    *err |= newIndexNode(&node, Call, index);
     if (*err) ERR_EXE(calcGetCall_Error);
 
+    Type_t curNode = node;
+
     while (CUR_SYM != '(') {
-        Type_t curNode = node;
+        if (CUR_SYM == ',')
+            NEXT_SYM;
 
-        while (CUR_SYM != ')') {
-            if (CUR_SYM == ',')
-                NEXT_SYM;
+        // fprintf(stderr, "Blyat!!!\n");
+        Type_t varNode = getV(buffer, varList, funcList, err);
+        if (*err) ERR_EXE(calcGetCall_Error);
 
-            Type_t varNode = getV(buffer, varList, funcList, err);
-            if (*err) ERR_EXE(calcGetCall_Error);
+        curNode -> lft = varNode;
 
-            curNode -> lft = varNode;
+        Type_t nextNode = nullptr;
+        *err |= newNode(&nextNode, Fictional);
+        if (*err) ERR_EXE(calcGetCall_Error);
 
-            Type_t nextNode = nullptr;
-            *err |= newNode(&nextNode, Fictional);
-            if (*err) ERR_EXE(calcGetCall_Error);
-
-            curNode -> rgt = nextNode;
-            curNode = nextNode;
-        }
-        NEXT_SYM;
-
-        if (curNode == node) ERR_EXE(calcGetCall_Error);
-        free(curNode);
-
-        return node;
+        curNode -> rgt = nextNode;
+        curNode = nextNode;
     }
+    NEXT_SYM;
 
-    ERR_EXE(calcGetCall_Error);
+    if (curNode == node) ERR_EXE(calcGetCall_Error);
+    free(curNode);
+
+    return node;
 }
 
 Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *err) {
@@ -329,6 +341,9 @@ Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *
     } else {
         node = getAssignation(buffer, varList, funcList, err);
         if (*err) ERR_EXE(calcGetReturn_Error);
+
+        if (CUR_SYM != ';') ERR_EXE(calcAssignation_Error);
+        NEXT_SYM;
     }
 
     return node;
@@ -553,7 +568,10 @@ Type_t getV(char **buffer, NameList *varList, NameList *funcList, size_t *err, c
     }
 
     if (CUR_SYM == ')') {
-        Type_t function = getCall(buffer, varList, funcList, err);
+        size_t index = getInd(funcList, newVar, err);
+        if (*err) ERR_EXE(calcGetV_Error);
+
+        Type_t function = getCall(buffer, varList, funcList, index, err);
         return function;
     }
 
@@ -745,13 +763,16 @@ static Type_t getIfBody(char **buffer, NameList *varList, NameList *funcList, si
     
     if (CUR_SYM == '}') {
         NEXT_SYM;
+
         Type_t curNode = node;
         curNode = getCommands(curNode, buffer, varList, funcList, err);
-        NEXT_SYM;
+        if (*err) ERR_EXE(calcGetIf_Error);
+
         node = node -> rgt;
     } else
         node = getDeclaration(buffer, varList, funcList, err);
 
+    // fprintf(stderr, "%c\n", CUR_SYM);
     if (*err) ERR_EXE(calcGetIf_Error);
 
     ifElse -> lft = node;
@@ -808,22 +829,27 @@ static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *func
         NEXT_SYM;
         char *name = getString(buffer, err);
         if (*err) ERR_EXE(calcGetDefenition_Error);
+        // fprintf(stderr, "%s\n", name);
 
         size_t index = nameListInsert(varList, name, err);
         if (*err) ERR_EXE(calcGetDefenition_Error);
+        // fprintf(stderr, "%s\n", CUR_STR);
 
         Type_t declarationNode = nullptr;
-        *err |= newIndexNode(&declarationNode, Varriable, index);
+        *err |= newIndexNode(&declarationNode, Declaration, index);
         if (*err) ERR_EXE(calcGetDefenition_Error);
         
+        // fprintf(stderr, "%s\n", CUR_STR);
         curNode -> lft = declarationNode;
 
         Type_t nextNode = nullptr;
-        *err |= newNode(&node, Fictional);
+        *err |= newNode(&nextNode, Fictional);
         if (*err) ERR_EXE(calcGetDefenition_Error);
+        // fprintf(stderr, "%08X", nextNode);
 
         curNode -> rgt = nextNode;
         curNode = nextNode;
+
         if (CUR_SYM != '(' && CUR_SYM != ',') ERR_EXE(calcGetDefenition_Error);
     }
     NEXT_SYM;
@@ -889,15 +915,15 @@ static size_t resize(NameList *list, size_t newSize) {
 // }
 
 static size_t getInd(NameList *varList, char *name, size_t *err) {
-    catchNullptr(varList, -1, *err |= calcNullCaught;);
-    catchNullptr( name  , -1, *err |= calcNullCaught;);
+    catchNullptr(varList, varList -> capacity, *err |= calcNullCaught;);
+    catchNullptr( name  , varList -> capacity, *err |= calcNullCaught;);
     
     for (size_t cur = 0; cur < varList -> size; cur++) {
-        if (!stricmp(name, varList -> names[cur]));
+        if (!stricmp(name, varList -> names[cur]))
             return cur;
     }
 
-    return -1;
+    return varList -> capacity;
 }
 
 static OperandType isBinOp(char **buffer, size_t *err) {
