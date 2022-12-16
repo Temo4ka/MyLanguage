@@ -89,6 +89,10 @@ Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *
 
 char *getString(char **buffer, size_t *err);
 
+int assignBuffer(Buffer *buf, const char *fileName);
+
+int bufferDtor(Buffer *buf);
+
 char *cur_str(char **buffer);
 
 char cur_sym(char **buffer);
