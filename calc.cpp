@@ -6,12 +6,12 @@
 #include <string.h>
 
 //--------------------------------------------------------------------------
-//! G = getDefinition | getDeclaration, '\0'
-//! getDefinition = [def ...)...( }] getDeclaration [{]
+//! G = getDefinition, '\0'
+//! getDefinition = [def ...)...( }] getDeclaration [{] | getDeclaration
 //! getDeclaration = [var ...], ';' | while
 //! While = { ["while )"] B ['('] getDeclaration }* | If
 //! If = { ["if )"] B ['('] getDeclaration {["else"] getDeclaration}* }* | getReturn
-//! getReturn = [return] B | getAssignation
+//! getReturn = [return] B, ';' | getAssignation
 //! getAssignation = V [=] B, ';'
 //! B = E {['<', "<=", '>', ">=", "=="] E}*
 //! E = T {['+', '-'] T}*
@@ -58,10 +58,11 @@ Type_t getG(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
-    Type_t node = getB(buffer, varList, funcList, err);
+    Type_t node = getDefinition(buffer, varList, funcList, err);
+    if (*err) ERR_EXE(calcEndOfProgramError);
 
     // fprintf(stderr, "%c\n", CUR_SYM);
-    if (CUR_SYM != '\n' && CUR_SYM != '\0') ERR_EXE(*err | calcEndOfProgramError);
+    if (CUR_SYM != '\0') ERR_EXE(calcEndOfProgramError);
     
     return node;
 }
@@ -110,7 +111,10 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
         return node;
     }
 
-    ERR_EXE(calcUnknownCommand_Error);
+    Type_t node = getDeclaration(buffer, varList, funcList, err);
+    If (*err) ERR_EXE(calcGetDefenition_Error);
+
+    return node;
 }
 
 Type_t getWhile(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
@@ -173,7 +177,7 @@ Type_t getIf(char **buffer, NameList *varList, NameList *funcList, size_t *err) 
         return node;
     }
 
-    Type_t node = getDeclaration(buffer, varList, funcList, err);
+    Type_t node = getReturn(buffer, varList, funcList, err);
     if (*err) ERR_EXE(*err);
 
     return node;
@@ -185,11 +189,13 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
     Type_t node = nullptr;
-    *err |= newNode(&node, Fictional);
-    if (*err) ERR_EXE(calcGetDeclaration_Error);
 
     if (strncmp(CUR_STR, "var", 3)) {
         CUR_STR += 3;
+
+        *err |= newNode(&node, Fictional);
+        if (*err) ERR_EXE(calcGetDeclaration_Error);
+
         Type_t curNode = node;
         while (CUR_SYM != ';') {
             if (CUR_SYM == ',')
@@ -221,7 +227,9 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
         return node;
     }
 
-    ERR_EXE(calcUnknownCommand_Error);
+    node = getWhile(buffer, varList, funcList, err);
+
+    return node;
 }
 
 Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size_t *err, char *newVar) {
@@ -245,7 +253,7 @@ Type_t getAssignation(char **buffer, NameList *varList, NameList *funcList, size
         node -> rgt = node2;
 
         return node;
-    } else ERR_EXE(calcAssignation_Error);
+    } else ERR_EXE(calcUnknownCommand_Error);
 
     if (CUR_SYM != ';') ERR_EXE(calcAssignation_Error);
     
@@ -310,6 +318,9 @@ Type_t getReturn(char ** buffer, NameList *varList, NameList *funcList, size_t *
         if (*err) ERR_EXE(calcGetReturn_Error);
 
         node -> lft = body;
+
+        if (CUR_SYM != ';') ERR_EXE(calcGetReturn_Error);
+        NEXT_SYM;
     } else {
         node = getAssignation(buffer, varList, funcList, err);
         if (*err) ERR_EXE(calcGetReturn_Error);
@@ -705,7 +716,7 @@ static Type_t getWhileBody(Type_t whileNode, char **buffer, NameList *varList, N
         return node -> rgt;
     } 
 
-    node -> lft = getWhile(buffer, varList, funcList, err);
+    node -> lft = getDeclaration(buffer, varList, funcList, err);
     node -> rgt = whileNode;
     
     if (*err) ERR_EXE(calcGetWhile_Error);
@@ -733,7 +744,8 @@ static Type_t getIfBody(char **buffer, NameList *varList, NameList *funcList, si
         NEXT_SYM;
         node = node -> rgt;
     } else
-        node = getWhile(buffer, varList, funcList, err);
+        node = getDeclaration(buffer, varList, funcList, err);
+
     if (*err) ERR_EXE(calcGetIf_Error);
 
     ifElse -> lft = node;
@@ -764,7 +776,7 @@ static Type_t getCommands(Type_t curNode, char **buffer, NameList *varList, Name
         *err |= newNode(&node1, Fictional);
         if (*err) ERR_EXE(calcGetWhile_Error);
 
-        node1 -> lft = getWhile(buffer, varList, funcList, err);
+        node1 -> lft = getDeclaration(buffer, varList, funcList, err);
         if (*err) ERR_EXE(calcGetWhile_Error);
 
         curNode -> rgt = node1;
