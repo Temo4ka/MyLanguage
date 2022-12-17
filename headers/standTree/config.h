@@ -22,7 +22,7 @@ enum OperandType {
     Sub    =  2,
     Mul    =  3,
     Div    =  4,
-    Pow    =  5,
+    Sqrt   =  5,
     Op_in  =  6,
     Op_out =  7,
     Eq     =  8,
@@ -35,9 +35,10 @@ enum OperandType {
     Or     = 15,
     And    = 16,
     Ass    = 17,
-    Cos    = 18,
-    Sin    = 19,
-    Log    = 20,
+    Pow    = 18,
+    Sin    = 100,
+    Cos    = 121,
+    Log    = 144,
 };
 
 typedef int Elem_t;

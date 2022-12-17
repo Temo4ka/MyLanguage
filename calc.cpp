@@ -33,6 +33,8 @@ static Type_t getCommands (Type_t curNode, char **buffer, NameList *varList, Nam
 
 static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
+static Type_t getSqrt(char **buffer, NameList *varList, NameList *funcList, size_t *err)
+
 static Type_t getCos(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 static Type_t getSin(char **buffer, NameList *varList, NameList *funcList, size_t *err);
@@ -609,6 +611,26 @@ char *getString(char **buffer, size_t *err) {
     *curVar = '\0';
 
     return newVar;
+}
+
+static Type_t getSqrt(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
+    catchNullptr(varList , POISON, *err |= calcNullCaught;);
+    catchNullptr(funcList, POISON, *err |= calcNullCaught;);
+    catchNullptr( buffer , POISON, *err |= calcNullCaught;);
+
+    SKIP_SYM(5);
+
+    Type_t arg  = getB(buffer, varList, funcList, err);
+    Type_t node =      nullptr     ;
+
+    *err |= newOpNode(&node, Sqrt);
+    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetSqrtError);
+
+    NEXT_SYM;
+
+    node -> lft = arg;
+
+    return node;
 }
 
 static Type_t getCos(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
