@@ -1,0 +1,8 @@
+def example)u, v( }
+    u = 1;
+    if )u == 1(
+        v = 1;
+    else
+        v = u + u + example)u, u(;
+    return u;
+{
