@@ -30,3 +30,8 @@
         return EXIT_FAILURE;                                                                           \
     }                                                                                                   \
 }
+
+#define mPrint(...)                                                                                        \
+    for (size_t cur = 0; cur < spaces; cur++)                                                               \
+        fprintf(stream, " ");                                                                                \
+    fprintf(stream, __VA_ARGS__);

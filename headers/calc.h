@@ -49,13 +49,6 @@ enum CalcErrors {
     calcUnknownCommand_Error  = 1 << 29,
 };
 
-struct NameList {
-    char   **names  = (char **) calloc(1, sizeof(char*));
-    size_t   size   =              0                    ;
-    size_t capacity =              1                    ;
-    // int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
-};
-
 // int bufferCtor(Buffer *buf, const char *fileName);
 
 // int bufferDtor(Buffer *buf);

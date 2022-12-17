@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
     CHECK(err);
 
     treeGraphVizDump(&program, "logs/treeDump.dot");
+
+    printStandartTree(&program, &varList, &funcList, outFileName);
     
     return EXIT_SUCCESS;
 }

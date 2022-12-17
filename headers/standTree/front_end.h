@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include <stdlib.h>
 
 enum TreeErrors {
     TreeIsOk                 =       0,
@@ -47,6 +48,13 @@ struct StandTreeNode {
     int printID = 0;
 };
 
+struct NameList {
+    char   **names  = (char **) calloc(1, sizeof(char*));
+    size_t   size   =              0                    ;
+    size_t capacity =              1                    ;
+    // int    *values  =  (int *)  calloc(1,  sizeof(int) ); //might be unneccessary(((
+};
+
 
 struct StandTree {
     StandTreeNode   *tree   =    {}   ;
@@ -73,3 +81,5 @@ int treeNumNodeCtor(StandTreeNode *node, int nodeData);
 int treeOpNodeCtor (StandTreeNode *node, enum OperandType nodeData);
 
 int _treeCtor(StandTree *root, const char * name, const char *file, const char *function, size_t line);
+
+int printStandartTree(StandTree *tree, NameList* varList, NameList* funcList, const char *fileName);

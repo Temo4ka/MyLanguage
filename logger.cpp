@@ -63,6 +63,9 @@ void treePrintNodeGrVz(StandTreeNode *tree, size_t *cur, FILE *stream) {
         treePrintNodeGrVz(tree -> rgt, cur, stream);
     }
 
+    tree -> printID = 0;
+
+    return;
 }
 
 static void printNodeParams(StandTreeNode *node, size_t nodeNum, FILE* stream) {
