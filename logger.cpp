@@ -43,22 +43,26 @@ const char* treeGraphVizDump(StandTree *tree, const char *fileName, size_t cmd) 
 
 
 void treePrintNodeGrVz(StandTreeNode *tree, size_t *cur, FILE *stream) {
-    if (tree == nullptr || cur == nullptr || stream == nullptr) return;
+    // fprintf(stderr, "%d", tree -> printID);
+    if (tree == nullptr || cur == nullptr || stream == nullptr || tree -> printID) return;
 
-    int nodeNum = *cur;
-
-    printNodeParams(tree, nodeNum, stream);
+    tree -> printID = *cur;
     
+    printNodeParams(tree, tree -> printID, stream);
+
     if (tree -> lft != nullptr) {
         (*cur)++;
-        fprintf(stream, "       node%zu -> node%zu[xlabel = \"lft\", color = \"darkblue\"];\n", nodeNum, *cur);
+        fprintf(stream, "       node%zu -> node%zu[xlabel = \"lft\", color = \"darkblue\"];\n",
+                tree -> printID, ((tree -> lft) -> printID)? (tree -> lft) -> printID: *cur);
         treePrintNodeGrVz(tree -> lft, cur, stream);
     }
     if (tree -> rgt != nullptr) {
         (*cur)++;
-        fprintf(stream, "       node%zu -> node%zu[xlabel = \"rgt\", color = \"darkgreen\"];\n", nodeNum, *cur);
+        fprintf(stream, "       node%zu -> node%zu[xlabel = \"rgt\", color = \"darkgreen\"];\n", 
+                tree -> printID, ((tree -> rgt) -> printID)? (tree -> rgt) -> printID: *cur);
         treePrintNodeGrVz(tree -> rgt, cur, stream);
     }
+
 }
 
 static void printNodeParams(StandTreeNode *node, size_t nodeNum, FILE* stream) {

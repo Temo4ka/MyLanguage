@@ -43,6 +43,8 @@ struct StandTreeNode {
 
     StandTreeNode *lft = nullptr;
     StandTreeNode *rgt = nullptr;
+
+    int printID = 0;
 };
 
 

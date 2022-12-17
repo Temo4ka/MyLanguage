@@ -33,7 +33,7 @@ static Type_t getCommands (Type_t curNode, char **buffer, NameList *varList, Nam
 
 static Type_t getFunctionParams(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
-static Type_t getSqrt(char **buffer, NameList *varList, NameList *funcList, size_t *err)
+static Type_t getSqrt(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
 static Type_t getCos(char **buffer, NameList *varList, NameList *funcList, size_t *err);
 
@@ -112,7 +112,6 @@ Type_t getDefinition(char **buffer, NameList *varList, NameList *funcList, size_
         NEXT_SYM;
 
         if (curNode == body) ERR_EXE(calcGetDefenition_Error);
-        free(curNode);
 
         return node;
     }
@@ -245,7 +244,6 @@ Type_t getDeclaration(char **buffer, NameList *varList, NameList *funcList, size
         NEXT_SYM;
 
         if (curNode == node) ERR_EXE(calcGetDeclaration_Error);
-        free(curNode);
 
         return node;
     }
@@ -316,7 +314,6 @@ Type_t getCall(char **buffer, NameList *varList, NameList *funcList, size_t inde
     NEXT_SYM;
 
     if (curNode == node) ERR_EXE(calcGetCall_Error);
-    free(curNode);
 
     return node;
 }
@@ -476,23 +473,30 @@ Type_t getU(char **buffer, NameList *varList, NameList *funcList, size_t *err) {
     catchNullptr(funcList, POISON, *err |= calcNullCaught;);
     catchNullptr( buffer , POISON, *err |= calcNullCaught;);
 
-    if (!strncmp("cos(", CUR_STR, 4)) {
+    if (!strncmp("cos)", CUR_STR, 4)) {
         Type_t node = getCos(buffer, varList, funcList, err);
         if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
 
         return node;
     }
 
-    if (!strncmp("sin(", CUR_STR, 4)) {
+    if (!strncmp("sin)", CUR_STR, 4)) {
         Type_t node = getSin(buffer, varList, funcList, err);
         if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
         
         return node;
     }
 
-    if (!strncmp("ln(", CUR_STR, 3)) {
+    if (!strncmp("ln)", CUR_STR, 3)) {
         // fprintf(stderr, "Here\n");
         Type_t node = getLog(buffer, varList, funcList, err);
+        if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
+        
+        return node;
+    }
+
+    if (!strncmp("sqrt)", CUR_STR, 5)) {
+        Type_t node = getSqrt(buffer, varList, funcList, err);
         if (node == nullptr || *err) ERR_EXE(calcGetU_Error);
         
         return node;
@@ -568,6 +572,7 @@ Type_t getV(char **buffer, NameList *varList, NameList *funcList, size_t *err, c
         newVar = getString(buffer, err);
         if (*err) ERR_EXE(calcGetV_Error);
     }
+    // fprintf(stderr, "%s\n", CUR_STR);
 
     if (CUR_SYM == ')') {
         size_t index = getInd(funcList, newVar, err);
@@ -580,7 +585,7 @@ Type_t getV(char **buffer, NameList *varList, NameList *funcList, size_t *err, c
     size_t varIndex = getInd(varList, newVar, err);
     if (*err) ERR_EXE(calcGetV_Error);
 
-    if (varIndex < 0 || varIndex > varList -> size) ERR_EXE(calcUndefinedVarriable);
+    if (varIndex < 0 || varIndex >= varList -> size) ERR_EXE(calcUndefinedVarriable);
     // {
     //     varIndex = nameListInsert(varList, newVar, err);
     //     if (*err) ERR_EXE(calcGetV_Error);
@@ -624,7 +629,7 @@ static Type_t getSqrt(char **buffer, NameList *varList, NameList *funcList, size
     Type_t node =      nullptr     ;
 
     *err |= newOpNode(&node, Sqrt);
-    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetSqrtError);
+    if (arg == nullptr || CUR_SYM != '(') ERR_EXE(calcGetSqrtError);
 
     NEXT_SYM;
 
@@ -644,7 +649,7 @@ static Type_t getCos(char **buffer, NameList *varList, NameList *funcList, size_
     Type_t node =      nullptr     ;
 
     *err |= newOpNode(&node, Cos);
-    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetCosError);
+    if (arg == nullptr || CUR_SYM != '(') ERR_EXE(calcGetCosError);
 
     NEXT_SYM;
 
@@ -664,7 +669,7 @@ static Type_t getSin(char **buffer, NameList *varList, NameList *funcList, size_
     Type_t node =      nullptr     ;
 
     *err |= newOpNode(&node, Sin);
-    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetSinError);
+    if (arg == nullptr || CUR_SYM != '(') ERR_EXE(calcGetSinError);
 
     NEXT_SYM;
 
@@ -684,7 +689,7 @@ static Type_t getLog(char **buffer, NameList *varList, NameList *funcList, size_
     Type_t node =           nullptr         ;
 
     *err |= newOpNode(&node, Log);
-    if (arg == nullptr || CUR_SYM != ')') ERR_EXE(calcGetLogError);
+    if (arg == nullptr || CUR_SYM != '(') ERR_EXE(calcGetLogError);
 
     NEXT_SYM;
 
@@ -937,15 +942,15 @@ static size_t resize(NameList *list, size_t newSize) {
 // }
 
 static size_t getInd(NameList *varList, char *name, size_t *err) {
-    catchNullptr(varList, varList -> capacity, *err |= calcNullCaught;);
-    catchNullptr( name  , varList -> capacity, *err |= calcNullCaught;);
+    catchNullptr(varList, varList -> capacity + 1, *err |= calcNullCaught;);
+    catchNullptr( name  , varList -> capacity + 1, *err |= calcNullCaught;);
     
     for (size_t cur = 0; cur < varList -> size; cur++) {
         if (!stricmp(name, varList -> names[cur]))
             return cur;
     }
 
-    return varList -> capacity;
+    return varList -> capacity + 1;
 }
 
 static OperandType isBinOp(char **buffer, size_t *err) {
